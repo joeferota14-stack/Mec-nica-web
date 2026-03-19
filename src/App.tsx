@@ -3,20 +3,125 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { ArrowUpRight, Activity, Wrench, CircleDashed, Cpu, Gauge, Disc, Thermometer, Battery, Droplet, Car, ShieldCheck, CheckCircle2, Star, Clock, Trophy, Phone, Mail, MapPin, MessageCircle } from "lucide-react";
+import { ArrowUpRight, Activity, Wrench, CircleDashed, Cpu, Gauge, Disc, Thermometer, Battery, Droplet, Car, ShieldCheck, CheckCircle2, Star, Clock, Trophy, Phone, Mail, MapPin, MessageCircle, Menu, X } from "lucide-react";
+import logo from './assets/wlas-motor-logo.png';
 
 export default function App() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // High-quality monochromatic automotive background
   const bgImageUrl = "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?q=80&w=2072&auto=format&fit=crop";
 
   return (
     <div className="bg-black font-sans min-h-screen scroll-smooth">
+      {/* Fixed Navigation Bar */}
+      <nav 
+        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 transition-all duration-500 ${
+          isScrolled ? 'bg-black/95 backdrop-blur-md shadow-lg shadow-black/50 py-3 border-b border-white/10' : 'bg-transparent py-6'
+        }`} 
+        id="nav-bar"
+      >
+        {/* Logo */}
+        <a href="#" className="flex items-center transition-all duration-300">
+          <img 
+            src={logo} 
+            alt="WLAS MOTOR" 
+            className="w-auto object-contain transition-all duration-500"
+            style={{
+              height: isScrolled ? '45px' : '60px',
+              background: 'transparent',
+              filter: isScrolled ? 'drop-shadow(0px 0px 6px rgba(255,255,255,0.5))' : 'none'
+            }}
+          />
+        </a>
+
+        {/* Botón Hamburguesa Móvil */}
+        <button 
+          className="md:hidden text-white transition-opacity"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="Alternar menú"
+        >
+          {isMobileMenuOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
+        </button>
+
+        {/* Links Centrados (Desktop) */}
+        <div className="hidden md:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2">
+          {[
+            { label: "INICIO", href: "#" },
+            { label: "SERVICIOS", href: "#services" },
+            { label: "CARACTERÍSTICAS", href: "#features" },
+            { label: "CONTACTO", href: "#footer" }
+          ].map((item, index) => (
+            <a
+              key={item.label}
+              href={item.href}
+              className={`text-[10px] xl:text-xs font-bold tracking-[0.15em] transition-colors ${
+                index === 0 
+                  ? "px-5 py-2.5 rounded-full border border-white/20 bg-white/5 text-white" 
+                  : "text-white/70 hover:text-white"
+              }`}
+              onClick={(e) => {
+                if (item.href === "#") {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </nav>
+
+      {/* Menú Overlay para Móviles */}
+      <div 
+        className={`md:hidden fixed inset-0 z-40 bg-black/95 backdrop-blur-lg flex flex-col justify-center items-center gap-8 transition-all duration-300 ${
+          isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        {[
+          { label: "INICIO", href: "#" },
+          { label: "SERVICIOS", href: "#services" },
+          { label: "CARACTERÍSTICAS", href: "#features" },
+          { label: "CONTACTO", href: "#footer" }
+        ].map((item, index) => (
+          <a
+            key={item.label}
+            href={item.href}
+            className={`text-lg font-bold tracking-widest uppercase transition-colors px-10 py-3 ${
+              index === 0 
+                ? "rounded-full border border-white/20 bg-white/10 text-white" 
+                : "text-white/70 hover:text-white"
+            }`}
+            onClick={(e) => {
+              setIsMobileMenuOpen(false);
+              if (item.href === "#") {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
+
       {/* Hero Section Container */}
-      <div className="min-h-screen flex items-center justify-center p-4 md:p-8">
+      <div className="min-h-screen flex items-center justify-center">
         {/* Main Frame Container */}
         <div 
-          className="relative w-full max-w-7xl h-[90vh] border border-white/10 rounded-[2rem] overflow-hidden flex flex-col"
+          className="relative w-full h-screen overflow-hidden flex flex-col"
           id="hero-frame"
         >
           {/* Background Image with Monochromatic Overlay */}
@@ -30,38 +135,6 @@ export default function App() {
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
           </div>
 
-          {/* Navigation Bar */}
-          <nav className="absolute top-8 right-8 flex items-center gap-4 z-20" id="nav-bar">
-            <div className="hidden md:flex gap-2">
-              {[
-                { label: "Inicio", href: "#" },
-                { label: "Servicios", href: "#services" },
-                { label: "Características", href: "#features" }
-              ].map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="px-6 py-2 rounded-full border border-white/10 bg-black/20 backdrop-blur-sm hover:bg-white hover:text-black transition-colors text-xs font-bold uppercase tracking-widest text-white inline-block text-center"
-                  id={`nav-${item.label.toLowerCase()}`}
-                  onClick={(e) => {
-                    if (item.href === "#") {
-                      e.preventDefault();
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                  }}
-                >
-                  {item.label}
-                </a>
-              ))}
-            </div>
-            <a 
-              href="#footer"
-              className="px-6 py-2 rounded-full bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors inline-block text-center"
-              id="nav-contact"
-            >
-              Contacto
-            </a>
-          </nav>
 
           {/* Content Layout */}
           <div className="flex-1 flex flex-col justify-center p-8 md:p-16 relative z-10">
@@ -105,7 +178,7 @@ export default function App() {
               </div>
             </div>
             <div className="hidden md:block">
-              <p className="text-[10px] uppercase tracking-widest text-white/40">AutoTech Elite © 2026</p>
+              <p className="text-[10px] uppercase tracking-widest text-white/40">WLAS MOTOR © 2026</p>
             </div>
           </div>
         </div>
@@ -388,8 +461,9 @@ export default function App() {
             
             {/* Brand Logo & Info */}
             <div className="lg:col-span-1">
-              <h2 className="font-display text-2xl font-bold tracking-tighter uppercase mb-6">
-                AutoTech<span className="text-zinc-500 text-xl">.</span>
+              <h2 className="font-display text-2xl font-bold tracking-tighter uppercase mb-6 flex items-center gap-3">
+                <img src={logo} alt="WLAS MOTOR" className="h-8 w-auto bg-transparent object-contain brightness-0 invert" />
+                WLAS MOTOR<span className="text-zinc-500 text-xl">.</span>
               </h2>
               <p className="text-zinc-500 text-sm leading-relaxed mb-8">
                 Ingeniería sin límites. Elevamos el estándar de la mecánica automotriz con precisión y tecnología.
@@ -408,7 +482,7 @@ export default function App() {
               </a>
               <a href="#" className="text-zinc-300 hover:text-white transition-colors flex items-center gap-3 text-sm">
                 <Mail className="w-4 h-4 text-zinc-500" />
-                contacto@autotech.elite
+                contacto@wlasmotor.com
               </a>
               <p className="text-zinc-300 flex items-start gap-3 text-sm">
                 <MapPin className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />
@@ -447,7 +521,7 @@ export default function App() {
 
           {/* Bottom Bar */}
           <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-zinc-800 text-xs text-zinc-600">
-            <p>© 2026 AutoTech Elite. Todos los derechos reservados.</p>
+            <p>© 2026 WLAS MOTOR. Todos los derechos reservados.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <a href="#" className="hover:text-zinc-300 transition-colors">Privacidad</a>
               <a href="#" className="hover:text-zinc-300 transition-colors">Términos</a>
