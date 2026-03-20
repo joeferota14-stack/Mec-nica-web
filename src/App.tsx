@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { ArrowUpRight, Activity, Wrench, CircleDashed, Cpu, Gauge, Disc, Thermometer, Battery, Droplet, Car, ShieldCheck, CheckCircle2, Star, Clock, Trophy, Phone, Mail, MapPin, MessageCircle, Menu, X } from "lucide-react";
 import logo from './assets/wlas-motor-logo.png';
@@ -34,14 +34,14 @@ export default function App() {
       >
         {/* Logo */}
         <a href="#" className="flex items-center transition-all duration-300">
-          <img 
-            src={logo} 
-            alt="WLAS MOTOR" 
+          <img
+            src={logo}
+            alt="WLAS MOTOR"
             className="w-auto object-contain transition-all duration-500"
             style={{
-              height: isScrolled ? '45px' : '60px',
+              height: isScrolled ? '64px' : '88px',
               background: 'transparent',
-              filter: isScrolled ? 'drop-shadow(0px 0px 6px rgba(255,255,255,0.5))' : 'none'
+              filter: isScrolled ? 'drop-shadow(0px 0px 8px rgba(255,255,255,0.6))' : 'none'
             }}
           />
         </a>
@@ -118,71 +118,110 @@ export default function App() {
       </div>
 
       {/* Hero Section Container */}
-      <div className="min-h-screen flex items-center justify-center">
-        {/* Main Frame Container */}
-        <div 
-          className="relative w-full h-screen overflow-hidden flex flex-col"
-          id="hero-frame"
-        >
-          {/* Background Image with Monochromatic Overlay */}
-          <div className="absolute inset-0 z-0">
-            <img 
-              src={bgImageUrl} 
-              alt="Automotive Background" 
-              className="w-full h-full object-cover grayscale opacity-40"
-              referrerPolicy="no-referrer"
+      <section className="relative w-full h-screen overflow-hidden flex flex-col" id="hero-frame">
+
+        {/* ── Background ── */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={bgImageUrl}
+            alt="WLAS MOTOR taller automotriz"
+            className="w-full h-full object-cover"
+            style={{ filter: 'grayscale(100%) brightness(0.5)', transform: 'scale(1.06)' }}
+            fetchPriority="high"
+            referrerPolicy="no-referrer"
+          />
+          {/* gradient: heavy from left + bottom */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.15) 100%)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #000 0%, rgba(0,0,0,0.5) 35%, transparent 65%)' }} />
+          {/* grain texture overlay */}
+          <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")', backgroundSize: '180px' }} />
+        </div>
+
+        {/* ── Gold accent line top ── */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] z-20" style={{ background: 'linear-gradient(90deg, transparent 0%, #C9A84C 30%, #F0D080 50%, #C9A84C 70%, transparent 100%)', animation: 'fadeIn 1.2s ease both' }} />
+
+        {/* ── Main content ── */}
+        <div className="relative z-10 flex-1 flex flex-col justify-end pb-28 px-8 md:px-16 lg:px-20">
+
+          {/* Logo + tagline lockup */}
+          <div className="flex items-center gap-5 mb-10" style={{ animation: 'fadeUp 0.9s 0.1s ease both', opacity: 0 }}>
+            <img
+              src={logo}
+              alt="WLAS MOTOR"
+              className="w-auto object-contain"
+              style={{ height: '68px' }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+            <div className="w-px h-9 bg-white/20" />
+            <span className="text-[9px] uppercase tracking-[0.35em] text-white/40 font-bold leading-relaxed">
+              Ingeniería<br />sin límites
+            </span>
           </div>
 
+          {/* Headline */}
+          <div style={{ animation: 'fadeUp 0.9s 0.25s ease both', opacity: 0 }}>
+            <h1
+              className="font-display uppercase leading-none"
+              style={{ fontSize: 'clamp(3.8rem, 10vw, 10rem)', letterSpacing: '-0.02em' }}
+            >
+              <span className="text-white block">ELEVAMOS</span>
+              <span className="block" style={{ WebkitTextStroke: '1.5px rgba(255,255,255,0.22)', color: 'transparent' }}>EL ESTÁNDAR</span>
+            </h1>
+          </div>
 
-          {/* Content Layout */}
-          <div className="flex-1 flex flex-col justify-center p-8 md:p-16 relative z-10">
-            
-            {/* Main Heading & Description */}
-            <div className="max-w-4xl">
-              <h1 
-                className="font-display text-[8vw] md:text-[5vw] leading-[0.9] uppercase tracking-tighter text-white"
-                id="main-heading"
+          {/* Gold divider */}
+          <div className="flex items-center gap-5 my-7" style={{ animation: 'fadeUp 0.9s 0.4s ease both', opacity: 0 }}>
+            <div className="h-px w-32" style={{ background: 'linear-gradient(to right, #C9A84C, transparent)' }} />
+            <span className="text-[9px] uppercase tracking-[0.3em] text-white/25">Mecánica automotriz de precisión</span>
+          </div>
+
+          {/* Description + CTA */}
+          <div className="flex flex-col md:flex-row md:items-end gap-8 md:gap-16" style={{ animation: 'fadeUp 0.9s 0.55s ease both', opacity: 0 }}>
+            <p className="text-white/45 text-base leading-relaxed max-w-sm">
+              Diagnóstico computarizado, refacciones OEM y técnicos certificados. Tu vehículo merece el estándar más alto.
+            </p>
+            <div className="flex items-center gap-3">
+              <a
+                href="https://wa.me/1234567890?text=Hola,%20me%20gustar%C3%ADa%20agendar%20una%20revisi%C3%B3n."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 group"
               >
-                INGENIERÍA <br />
-                <span className="text-white/30">SIN LÍMITES</span>
-              </h1>
-              <p className="mt-6 text-sm md:text-lg text-white/60 font-medium max-w-xl leading-relaxed" id="main-description">
-                Elevamos el estándar de la mecánica automotriz. Precisión técnica y atención al detalle para vehículos que exigen lo mejor.
-              </p>
-              
-              {/* Single CTA Button */}
-              <div className="mt-10 flex items-center gap-4 group cursor-pointer w-fit" id="cta-button">
-                <div className="bg-white text-black px-10 py-4 rounded-full font-bold text-xs uppercase tracking-[0.2em] transition-transform group-hover:scale-105">
+                <span
+                  className="px-9 py-4 rounded-full text-xs font-bold uppercase tracking-[0.2em] transition-all duration-300 group-hover:scale-105"
+                  style={{ background: '#C9A84C', color: '#000' }}
+                >
                   Reservar Cita
-                </div>
-                <div className="w-12 h-12 rounded-full border border-white flex items-center justify-center transition-all group-hover:bg-white group-hover:text-black">
+                </span>
+                <span className="w-12 h-12 rounded-full border border-white/25 flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-black group-hover:border-white">
                   <ArrowUpRight className="w-5 h-5" />
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Bottom Status Bar */}
-          <div className="absolute bottom-8 left-8 right-8 flex justify-between items-center z-20 border-t border-white/10 pt-8" id="status-bar">
-            <div className="flex gap-8">
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase tracking-widest text-white/40">Ubicación</p>
-                <p className="text-xs font-bold text-white uppercase">Distrito Tecnológico</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase tracking-widest text-white/40">Horario</p>
-                <p className="text-xs font-bold text-white uppercase">Lun - Sáb / 08:00 - 18:00</p>
-              </div>
-            </div>
-            <div className="hidden md:block">
-              <p className="text-[10px] uppercase tracking-widest text-white/40">WLAS MOTOR © 2026</p>
+                </span>
+              </a>
             </div>
           </div>
         </div>
-      </div>
+
+        {/* ── Bottom status bar ── */}
+        <div
+          className="absolute bottom-0 left-0 right-0 z-20 flex justify-between items-center px-8 md:px-16 lg:px-20 py-5"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(12px)', animation: 'fadeIn 1s 0.8s ease both', opacity: 0 }}
+        >
+          <div className="flex gap-10">
+            <div>
+              <p className="text-[9px] uppercase tracking-widest text-white/25 mb-1">Ubicación</p>
+              <p className="text-[11px] font-bold text-white uppercase tracking-wider">Distrito Tecnológico</p>
+            </div>
+            <div>
+              <p className="text-[9px] uppercase tracking-widest text-white/25 mb-1">Horario</p>
+              <p className="text-[11px] font-bold text-white uppercase tracking-wider">Lun – Sáb / 08:00 – 18:00</p>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" style={{ boxShadow: '0 0 8px #34d399', animation: 'fadeIn 0.5s ease infinite alternate' }} />
+            <span className="text-[9px] uppercase tracking-[0.3em] text-white/30">Disponible ahora</span>
+          </div>
+        </div>
+
+      </section>
 
       {/* Services Section */}
       <section className="bg-zinc-50 py-24 px-4 md:px-8 border-t border-zinc-200" id="services">
