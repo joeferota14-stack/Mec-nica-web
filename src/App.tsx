@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { ArrowUpRight, Activity, Wrench, CircleDashed, Cpu, Gauge, Disc, Thermometer, Battery, Droplet, Car, ShieldCheck, CheckCircle2, Star, Clock, Trophy, Phone, Mail, MapPin, MessageCircle, Menu, X } from "lucide-react";
 import logo from './assets/wlas-motor-logo.png';
@@ -251,12 +252,12 @@ export default function App() {
               Redefinimos el cuidado automotriz con técnicos expertos y tecnología de punta, logrando velocidad, exactitud y confianza en el camino.
             </p>
             
-            <button className="flex items-center gap-3 bg-zinc-900 text-white px-6 py-3 rounded-full w-fit shadow-lg shadow-zinc-900/20 hover:scale-[1.02] active:scale-95 transition-all group mb-16" id="services-cta">
+            <Link to="/dashboard/appointments" className="flex items-center gap-3 bg-zinc-900 text-white px-6 py-3 rounded-full w-fit shadow-lg shadow-zinc-900/20 hover:scale-[1.02] active:scale-95 transition-all group mb-16" id="services-cta">
               <span className="font-semibold text-sm">Reservar una demostración</span>
               <div className="bg-white text-zinc-900 rounded-full w-6 h-6 flex items-center justify-center group-hover:bg-zinc-100 transition-colors">
                 <ArrowUpRight className="w-4 h-4" />
               </div>
-            </button>
+            </Link>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-zinc-200 pt-10">
               <div className="flex flex-col gap-4">
@@ -362,12 +363,12 @@ export default function App() {
             
           </div>
 
-          <button className="flex items-center gap-3 bg-zinc-900 text-white px-8 py-4 rounded-full w-fit shadow-lg shadow-zinc-900/20 hover:scale-[1.02] active:scale-95 transition-all group">
+          <Link to="/dashboard/appointments" className="flex items-center gap-3 bg-zinc-900 text-white px-8 py-4 rounded-full w-fit shadow-lg shadow-zinc-900/20 hover:scale-[1.02] active:scale-95 transition-all group">
             <span className="font-semibold text-sm tracking-wide">Agendar Revisión Completa</span>
             <div className="bg-white text-zinc-900 rounded-full w-6 h-6 flex items-center justify-center group-hover:bg-zinc-100 transition-colors">
               <ArrowUpRight className="w-4 h-4" />
             </div>
-          </button>
+          </Link>
 
         </div>
       </section>
@@ -507,9 +508,9 @@ export default function App() {
               <p className="text-zinc-500 text-sm leading-relaxed mb-8">
                 Ingeniería sin límites. Elevamos el estándar de la mecánica automotriz con precisión y tecnología.
               </p>
-              <button className="px-6 py-2 rounded-full border border-zinc-700 text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-colors w-fit">
+              <Link to="/dashboard/appointments" className="px-6 py-2 rounded-full border border-zinc-700 text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-colors w-fit">
                 Reservar Cita
-              </button>
+              </Link>
             </div>
 
             {/* Contact Links */}
