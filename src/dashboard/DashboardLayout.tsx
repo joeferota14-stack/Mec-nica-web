@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
@@ -37,28 +37,23 @@ function PageLoader() {
 }
 
 export default function DashboardLayout() {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        minHeight: '100vh',
-        backgroundColor: '#0A0A0A',
-      }}
-    >
-      <Sidebar />
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-      {/* Main content area — offset by sidebar width */}
-      <div
-        style={{
-          marginLeft: 240,
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: '100vh',
-          minWidth: 0,
-        }}
-      >
-        <Topbar />
+  return (
+    <div className="flex min-h-screen" style={{ backgroundColor: '#0A0A0A' }}>
+      {/* Mobile overlay — closes sidebar when tapping outside */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Main content area — offset by sidebar on desktop */}
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 lg:ml-[240px]">
+        <Topbar onMenuToggle={() => setSidebarOpen((s) => !s)} />
 
         <main
           style={{

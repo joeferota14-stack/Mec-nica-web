@@ -68,8 +68,8 @@ export default function App() {
               key={item.label}
               href={item.href}
               className={`text-[10px] xl:text-xs font-bold tracking-[0.15em] transition-colors ${
-                index === 0 
-                  ? "px-5 py-2.5 rounded-full border border-white/20 bg-white/5 text-white" 
+                index === 0
+                  ? "px-5 py-2.5 rounded-full border border-white/20 bg-white/5 text-white"
                   : "text-white/70 hover:text-white"
               }`}
               onClick={(e) => {
@@ -82,6 +82,17 @@ export default function App() {
               {item.label}
             </a>
           ))}
+        </div>
+
+        {/* Botón Iniciar Sesión (Desktop) */}
+        <div className="hidden md:flex items-center">
+          <Link
+            to="/login"
+            className="text-[10px] xl:text-xs font-bold tracking-[0.15em] px-5 py-2.5 rounded-full transition-all text-black"
+            style={{ background: 'linear-gradient(135deg, #C9A84C 0%, #F0D080 50%, #C9A84C 100%)' }}
+          >
+            INICIAR SESIÓN
+          </Link>
         </div>
       </nav>
 
@@ -116,6 +127,16 @@ export default function App() {
             {item.label}
           </a>
         ))}
+
+        {/* Botón Iniciar Sesión (Móvil) */}
+        <Link
+          to="/login"
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="mt-2 text-sm font-bold tracking-widest uppercase px-10 py-3.5 rounded-full text-black"
+          style={{ background: 'linear-gradient(135deg, #C9A84C 0%, #F0D080 50%, #C9A84C 100%)' }}
+        >
+          INICIAR SESIÓN
+        </Link>
       </div>
 
       {/* Hero Section Container */}

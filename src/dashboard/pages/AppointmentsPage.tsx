@@ -951,7 +951,8 @@ function WeekView({ appointments, weekDates, onBlockClick }: WeekViewProps) {
   const TOTAL_SLOTS = 20; // 8:00 to 18:00
 
   return (
-    <div className="rounded-xl border border-white/08 overflow-hidden" style={{ background: '#161616' }}>
+    <div className="rounded-xl border border-white/08 overflow-x-auto" style={{ background: '#161616' }}>
+      <div style={{ minWidth: 560 }}>
       {/* Day headers */}
       <div className="grid border-b border-white/08" style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}>
         <div style={{ background: '#111111' }} className="p-2" />
@@ -1061,6 +1062,7 @@ function WeekView({ appointments, weekDates, onBlockClick }: WeekViewProps) {
             );
           })}
         </div>
+      </div>
       </div>
     </div>
   );

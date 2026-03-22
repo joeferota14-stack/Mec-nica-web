@@ -11,6 +11,7 @@ import {
   CalendarDays,
   Bot,
   ArrowLeft,
+  X,
 } from 'lucide-react';
 import wlasLogo from '../assets/wlas-motor-logo.png';
 
@@ -19,6 +20,11 @@ interface NavItem {
   label: string;
   icon: React.ReactNode;
   badge?: string;
+}
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const navItems: NavItem[] = [
@@ -34,37 +40,49 @@ const navItems: NavItem[] = [
   { to: '/dashboard/ai-assistant', label: 'Asistente IA', icon: <Bot size={18} />, badge: 'IA' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate();
 
   return (
     <aside
+      className={`
+        fixed top-0 left-0 z-40 h-screen flex flex-col
+        transition-transform duration-300 ease-in-out
+        lg:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}
       style={{
         width: 240,
-        minWidth: 240,
-        height: '100vh',
         backgroundColor: '#111111',
         borderRight: '1px solid rgba(255,255,255,0.08)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: 40,
       }}
     >
-      {/* Logo */}
+      {/* Logo + mobile close button */}
       <div
         style={{
           padding: '20px 16px 16px',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
         }}
       >
         <img
           src={wlasLogo}
           alt="WLAS MOTOR"
-          style={{ width: '100%', maxWidth: 160, height: 'auto', objectFit: 'contain' }}
+          style={{ width: '100%', maxWidth: 140, height: 'auto', objectFit: 'contain' }}
         />
+        {/* Close button — only visible on mobile */}
+        <button
+          onClick={onClose}
+          className="lg:hidden flex items-center justify-center rounded-lg p-1.5 transition-colors"
+          style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0 }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.8)')}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.4)')}
+          aria-label="Cerrar menú"
+        >
+          <X size={18} />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -73,6 +91,7 @@ export default function Sidebar() {
           <NavLink
             key={item.to}
             to={item.to}
+            onClick={onClose}
             style={({ isActive }) => ({
               display: 'flex',
               alignItems: 'center',
@@ -114,7 +133,7 @@ export default function Sidebar() {
       {/* Back to website */}
       <div style={{ padding: '12px 8px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => { navigate('/'); onClose(); }}
           style={{
             display: 'flex',
             alignItems: 'center',
