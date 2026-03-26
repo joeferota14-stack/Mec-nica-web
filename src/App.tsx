@@ -1,590 +1,927 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Wrench, ShieldCheck, Clock, MessageCircle, Menu, X,
+  Package, Monitor, Calendar, DollarSign, Car, Lock,
+  Phone, Mail, MapPin, Cpu, Settings, Navigation, Zap,
+  Target, Snowflake, Facebook, Instagram, Youtube,
+  CheckCircle, Droplets, Search, Check, Star, ArrowRight,
+} from 'lucide-react';
+import wlasLogo from './assets/wlas-motor-logo.png';
 
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "motion/react";
-import { ArrowUpRight, Activity, Wrench, CircleDashed, Cpu, Gauge, Disc, Thermometer, Battery, Droplet, Car, ShieldCheck, CheckCircle2, Star, Clock, Trophy, Phone, Mail, MapPin, MessageCircle, Menu, X } from "lucide-react";
-import logo from './assets/wlas-motor-logo.png';
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export default function App() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const CARD_SHADOW =
+  'rgba(14,63,126,0.04) 0px 0px 0px 1px,' +
+  'rgba(42,51,69,0.04) 0px 1px 1px -0.5px,' +
+  'rgba(42,51,70,0.04) 0px 3px 3px -1.5px,' +
+  'rgba(42,51,70,0.04) 0px 6px 6px -3px,' +
+  'rgba(14,63,126,0.04) 0px 12px 12px -6px,' +
+  'rgba(14,63,126,0.04) 0px 24px 24px -12px';
+
+const PF = "'Playfair Display', serif";
+const JB = "'JetBrains Mono', monospace";
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+const CATEGORIES = ['Todos', 'Mantenimiento', 'Motor', 'Frenos', 'Suspensión', 'Diagnóstico', 'Paquetes'];
+
+interface Service {
+  id: number; name: string; price: string; duration: string;
+  category: string; badge: string; Icon: React.ElementType; description: string;
+}
+
+const SERVICES: Service[] = [
+  { id: 1,  name: 'Cambio de Aceite y Filtro',         price: '$35',  duration: '45 min', category: 'Mantenimiento', badge: '⚡ Más Solicitado',     Icon: Droplets,    description: 'Aceite sintético o convencional, filtro nuevo y revisión de niveles.' },
+  { id: 2,  name: 'Diagnóstico Computarizado OBD2',     price: '$25',  duration: '1 h',    category: 'Diagnóstico',   badge: '🔍 Incluye Informe',    Icon: Cpu,         description: 'Lectura de códigos de falla con escáner profesional e informe escrito.' },
+  { id: 3,  name: 'ABC de Motor',                       price: '$80',  duration: '2 h',    category: 'Motor',         badge: '✅ Con Garantía',       Icon: Wrench,      description: 'Bujías, filtros de aire y combustible, correas auxiliares y más.' },
+  { id: 4,  name: 'ABC de Frenos',                      price: '$60',  duration: '1.5 h',  category: 'Frenos',        badge: '🛡️ Seguridad',         Icon: ShieldCheck, description: 'Pastillas, discos, líquido de frenos e inspección completa del sistema.' },
+  { id: 5,  name: 'Revisión de Suspensión',             price: '$30',  duration: '45 min', category: 'Suspensión',    badge: '🔍 Incluye Informe',    Icon: Car,         description: 'Inspección de amortiguadores, rótulas, terminales y barra estabilizadora.' },
+  { id: 6,  name: 'Cambio de Correa de Distribución',   price: '$120', duration: '3–4 h',  category: 'Motor',         badge: '⚠️ Trabajo Crítico',    Icon: Settings,    description: 'Correa, tensor, polea y bomba de agua según especificación de fábrica.' },
+  { id: 7,  name: 'Revisión Pre-Compra',                price: '$45',  duration: '1.5 h',  category: 'Diagnóstico',   badge: '📋 Informe Detallado',  Icon: Search,      description: 'Inspección de 50 puntos antes de comprar un vehículo usado.' },
+  { id: 8,  name: 'Mantenimiento 10.000 km',            price: '$95',  duration: '2 h',    category: 'Mantenimiento', badge: '🏆 Paquete Completo',   Icon: Package,     description: 'Aceite, filtros, frenos, suspensión, luces y diagnóstico OBD incluido.' },
+  { id: 9,  name: 'Paquete Viaje Seguro',               price: '$65',  duration: '2 h',    category: 'Paquetes',      badge: '🚗 Especial',           Icon: Navigation,  description: 'Check-up completo para carretera: frenos, suspensión, luces, líquidos.' },
+  { id: 10, name: 'Limpieza de Inyectores',             price: '$50',  duration: '1.5 h',  category: 'Motor',         badge: '⚡ Mejora Rendimiento', Icon: Zap,         description: 'Limpieza ultrasónica en banco con prueba de caudal y atomización.' },
+  { id: 11, name: 'Alineación y Balanceo',              price: '$25',  duration: '45 min', category: 'Suspensión',    badge: '✅ Con Garantía',       Icon: Target,      description: 'Alineación computarizada en 4 ruedas y balanceo de neumáticos.' },
+  { id: 12, name: 'Paquete Invierno',                   price: '$75',  duration: '2 h',    category: 'Paquetes',      badge: '❄️ Temporada',          Icon: Snowflake,   description: 'Batería, limpiaparabrisas, líquido refrigerante y revisión de luces.' },
+];
+
+interface Testimonial {
+  id: number; name: string; city: string; service: string;
+  text: string; initials: string; color: string;
+}
+
+const TESTIMONIALS: Testimonial[] = [
+  { id: 1, name: 'María González',   city: 'Quito Norte',          service: 'Cambio de Aceite',        initials: 'MG', color: '#E94F37', text: '"Llevo 3 años trayendo mi carro aquí. Son puntuales, honestos y jamás me han cobrado algo innecesario. El mejor taller de Quito, sin duda."' },
+  { id: 2, name: 'Carlos Mendoza',   city: 'La Floresta',          service: 'Diagnóstico OBD2',        initials: 'CM', color: '#3B82F6', text: '"Me explicaron el diagnóstico con paciencia, mostrándome cada código en pantalla. Nada de tecnicismos innecesarios. Confianza total."' },
+  { id: 3, name: 'Paola Vásquez',    city: 'Cumbayá',              service: 'ABC de Frenos',           initials: 'PV', color: '#8B5CF6', text: '"El sistema de frenos de mi SUV estaba comprometido. Lo resolvieron en el tiempo prometido y con garantía escrita. Profesionalismo de primer nivel."' },
+  { id: 4, name: 'Roberto Andrade',  city: 'Valle de los Chillos', service: 'Mantenimiento 10.000 km', initials: 'RA', color: '#10B981', text: '"Paquete completo a un precio justo. Entregaron el carro limpio por dentro y por fuera, con un informe detallado. Impecable."' },
+  { id: 5, name: 'Sofía Torres',     city: 'Quito Sur',            service: 'Revisión Pre-Compra',     initials: 'ST', color: '#F59E0B', text: '"Me salvaron de comprar un carro con problemas graves de motor. El informe fue tan detallado que el vendedor no tuvo argumentos. Vale cada centavo."' },
+  { id: 6, name: 'Juan Pablo Ruiz',  city: 'Sangolquí',            service: 'Correa de Distribución',  initials: 'JP', color: '#EC4899', text: '"Trabajo crítico hecho a la perfección. Usaron repuestos originales, respetaron el presupuesto y me avisaron de todo antes de proceder."' },
+  { id: 7, name: 'Daniela Espinoza', city: 'Nayón',                service: 'ABC de Motor',            initials: 'DE', color: '#14B8A6', text: '"Mi carro arranca diferente: más potente, más suave. Noté la diferencia desde el primer día. El equipo es joven, capacitado y muy amable."' },
+  { id: 8, name: 'Andrés Molina',    city: 'Tumbaco',              service: 'Paquete Viaje Seguro',    initials: 'AM', color: '#6366F1', text: '"Identificaron un problema en la suspensión que hubiera sido peligroso en carretera. Viajé tranquilo gracias a ellos. Altamente recomendados."' },
+  { id: 9, name: 'Lucía Benítez',    city: 'El Inca',              service: 'Alineación y Balanceo',   initials: 'LB', color: '#F97316', text: '"Rapidísimos, honestos y con precios transparentes. Me mostraron los valores antes y después de la alineación en pantalla. Regresaré siempre."' },
+];
+
+const COL_T1 = [TESTIMONIALS[0], TESTIMONIALS[1], TESTIMONIALS[2]];
+const COL_T2 = [TESTIMONIALS[3], TESTIMONIALS[4], TESTIMONIALS[5]];
+const COL_T3 = [TESTIMONIALS[6], TESTIMONIALS[7], TESTIMONIALS[8]];
+
+// ─── TikTok SVG ───────────────────────────────────────────────────────────────
+const TikTokIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
+    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.88a8.27 8.27 0 004.84 1.54V7.01a4.85 4.85 0 01-1.07-.32z" />
+  </svg>
+);
+
+// ─── Global CSS ───────────────────────────────────────────────────────────────
+const GLOBAL_CSS = `
+  html { scroll-behavior: smooth; }
+  :root {
+    --font-pf: 'Playfair Display', serif;
+    --font-jb: 'JetBrains Mono', monospace;
+  }
+  @keyframes blur-in {
+    0%   { filter: blur(12px); opacity: 0; transform: translateY(8px); }
+    100% { filter: blur(0);    opacity: 1; transform: translateY(0);   }
+  }
+  @keyframes scroll-down {
+    0%   { transform: translateY(0);    }
+    100% { transform: translateY(-50%); }
+  }
+  @keyframes scroll-up {
+    0%   { transform: translateY(-50%); }
+    100% { transform: translateY(0);    }
+  }
+  @keyframes float-btn {
+    0%, 100% { transform: translateY(0);    }
+    50%       { transform: translateY(-6px); }
+  }
+  @keyframes pulse-line {
+    0%, 100% { opacity: 0.6; transform: scaleY(1);   }
+    50%       { opacity: 0.15; transform: scaleY(0.45); }
+  }
+  .reveal-card {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal-card.revealed { opacity: 1; transform: scale(1); }
+  .scroll-down { animation: scroll-down 35s linear infinite; }
+  .scroll-up   { animation: scroll-up   35s linear infinite; }
+  .testimonials-col:hover .scroll-down,
+  .testimonials-col:hover .scroll-up { animation-duration: 75s; }
+  .service-card { transition: border-color 0.3s ease, transform 0.3s ease-out; }
+  .service-card:hover { border-color: rgba(233,79,55,0.4) !important; transform: scale(1.02); }
+  .trust-badge  { transition: background 0.3s ease; cursor: default; }
+  .trust-badge:hover { background: rgba(233,79,55,0.05) !important; }
+  .bento-card   { transition: transform 0.3s ease-out; }
+  .bento-card:hover { transform: scale(1.02); }
+  .nav-link { position: relative; color: rgba(245,245,240,0.75); transition: color 0.2s; font-size: 14px; font-weight: 500; text-decoration: none; }
+  .nav-link:hover { color: #F5F5F0; }
+  .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1px; background: #E94F37; transition: width 0.3s; }
+  .nav-link:hover::after { width: 100%; }
+  .whatsapp-fab { animation: float-btn 3s ease-in-out infinite; }
+  .filter-scroll { overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+  @media (max-width: 900px) {
+    .bento-grid > * { grid-column: 1 / -1 !important; grid-row: auto !important; min-height: auto !important; }
+  }
+  @media (max-width: 768px) {
+    .badges-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .testimonials-outer { grid-template-columns: 1fr !important; height: auto !important; }
+    .testimonials-outer > *:nth-child(2),
+    .testimonials-outer > *:nth-child(3) { display: none; }
+  }
+  @media (max-width: 480px) {
+    .badges-grid { grid-template-columns: 1fr !important; }
+  }
+`;
+
+// ─── Reveal Hook ──────────────────────────────────────────────────────────────
+function useReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const container = ref.current;
+    if (!container) return;
+    const cards = Array.from(container.querySelectorAll<HTMLElement>('.reveal-card'));
+    if (!cards.length) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          cards.forEach((card, i) => setTimeout(() => card.classList.add('revealed'), i * 80));
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+  return ref;
+}
+
+// ─── Navbar ───────────────────────────────────────────────────────────────────
+function Navbar() {
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const fn = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', fn);
+    return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  // High-quality monochromatic automotive background
-  const bgImageUrl = "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?q=80&w=2072&auto=format&fit=crop";
+  const links = [
+    { label: 'Servicios', href: '#servicios'   },
+    { label: 'Nosotros',  href: '#nosotros'    },
+    { label: 'Opiniones', href: '#testimonios' },
+    { label: 'Contacto',  href: '#footer'      },
+  ];
 
   return (
-    <div className="bg-black font-sans min-h-screen scroll-smooth">
-      {/* Fixed Navigation Bar */}
-      <nav 
-        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 transition-all duration-500 ${
-          isScrolled ? 'bg-black/95 backdrop-blur-md shadow-lg shadow-black/50 py-3 border-b border-white/10' : 'bg-transparent py-6'
-        }`} 
-        id="nav-bar"
+    <>
+      <nav
+        aria-label="Navegación principal"
+        style={{
+          position: 'fixed', top: 12, left: 12, right: 12, zIndex: 100,
+          height: 64, borderRadius: 20,
+          background: 'rgba(26,26,46,0.55)',
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          display: 'flex', alignItems: 'center', padding: '0 24px',
+          boxShadow: scrolled ? '0 8px 32px rgba(0,0,0,0.35)' : 'none',
+          transition: 'box-shadow 0.3s',
+        }}
       >
-        {/* Logo */}
-        <a href="#" className="flex items-center transition-all duration-300">
-          <img
-            src={logo}
-            alt="WLAS MOTOR"
-            className="w-auto object-contain transition-all duration-500"
-            style={{
-              height: isScrolled ? '64px' : '88px',
-              background: 'transparent',
-              filter: isScrolled ? 'drop-shadow(0px 0px 8px rgba(255,255,255,0.6))' : 'none'
-            }}
-          />
-        </a>
-
-        {/* Botón Hamburguesa Móvil */}
-        <button 
-          className="md:hidden text-white transition-opacity"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="Alternar menú"
-        >
-          {isMobileMenuOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
-        </button>
-
-        {/* Links Centrados (Desktop) */}
-        <div className="hidden md:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2">
-          {[
-            { label: "INICIO", href: "#" },
-            { label: "SERVICIOS", href: "#services" },
-            { label: "CARACTERÍSTICAS", href: "#features" },
-            { label: "CONTACTO", href: "#footer" }
-          ].map((item, index) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className={`text-[10px] xl:text-xs font-bold tracking-[0.15em] transition-colors ${
-                index === 0 
-                  ? "px-5 py-2.5 rounded-full border border-white/20 bg-white/5 text-white" 
-                  : "text-white/70 hover:text-white"
-              }`}
-              onClick={(e) => {
-                if (item.href === "#") {
-                  e.preventDefault();
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
-            >
-              {item.label}
-            </a>
+        {/* Left nav links — desktop */}
+        <div className="hidden md:flex items-center gap-6">
+          {links.map(l => (
+            <a key={l.label} href={l.href} className="nav-link">{l.label}</a>
           ))}
         </div>
+
+        {/* Logo — absolutely centered */}
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+          <Link to="/" aria-label="Wlas Motor — página de inicio">
+            <img src={wlasLogo} alt="Wlas Motor" style={{ height: 52, width: 'auto' }} />
+          </Link>
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        {/* CTA — desktop */}
+        <div className="hidden md:block">
+          <Link
+            to="/dashboard"
+            aria-label="Agendar cita en el taller"
+            style={{
+              background: '#E94F37', color: '#F5F5F0',
+              padding: '10px 20px', borderRadius: 50,
+              fontSize: 14, fontWeight: 600, textDecoration: 'none',
+              whiteSpace: 'nowrap', transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#F4721E')}
+            onMouseLeave={e => (e.currentTarget.style.background = '#E94F37')}
+          >
+            Agendar Cita
+          </Link>
+        </div>
+
+        {/* Hamburger — mobile */}
+        <button
+          className="md:hidden ml-auto"
+          onClick={() => setOpen(o => !o)}
+          aria-label={open ? 'Cerrar menú' : 'Abrir menú de navegación'}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#F5F5F0', padding: 4 }}
+        >
+          {open ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </nav>
 
-      {/* Menú Overlay para Móviles */}
-      <div 
-        className={`md:hidden fixed inset-0 z-40 bg-black/95 backdrop-blur-lg flex flex-col justify-center items-center gap-8 transition-all duration-300 ${
-          isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        {[
-          { label: "INICIO", href: "#" },
-          { label: "SERVICIOS", href: "#services" },
-          { label: "CARACTERÍSTICAS", href: "#features" },
-          { label: "CONTACTO", href: "#footer" }
-        ].map((item, index) => (
-          <a
-            key={item.label}
-            href={item.href}
-            className={`text-lg font-bold tracking-widest uppercase transition-colors px-10 py-3 ${
-              index === 0 
-                ? "rounded-full border border-white/20 bg-white/10 text-white" 
-                : "text-white/70 hover:text-white"
-            }`}
-            onClick={(e) => {
-              setIsMobileMenuOpen(false);
-              if (item.href === "#") {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }
-            }}
+      {/* Mobile slide-down menu */}
+      {open && (
+        <div
+          style={{
+            position: 'fixed', top: 88, left: 12, right: 12, zIndex: 99,
+            background: 'rgba(22,22,40,0.97)',
+            backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+            borderRadius: 16, border: '1px solid rgba(255,255,255,0.1)',
+            animation: 'blur-in 0.25s ease-out both',
+          }}
+        >
+          {links.map((l, i) => (
+            <a
+              key={l.label}
+              href={l.href}
+              onClick={() => setOpen(false)}
+              style={{
+                display: 'block', padding: '14px 24px',
+                color: 'rgba(245,245,240,0.85)', fontSize: 15, fontWeight: 500,
+                textDecoration: 'none',
+                borderBottom: i < links.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+              }}
+            >
+              {l.label}
+            </a>
+          ))}
+          <div style={{ padding: '16px 24px 20px' }}>
+            <Link
+              to="/dashboard"
+              onClick={() => setOpen(false)}
+              aria-label="Agendar cita"
+              style={{
+                display: 'block', textAlign: 'center',
+                background: '#E94F37', color: '#F5F5F0',
+                padding: '13px 20px', borderRadius: 50,
+                fontSize: 15, fontWeight: 600, textDecoration: 'none',
+              }}
+            >
+              Agendar Cita →
+            </Link>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ─── Hero ─────────────────────────────────────────────────────────────────────
+function HeroSection() {
+  return (
+    <section
+      id="hero"
+      aria-label="Bienvenido a Wlas Motor"
+      style={{ minHeight: '100vh', background: '#1A1A2E', position: 'relative', display: 'flex', alignItems: 'center', overflow: 'hidden' }}
+    >
+      {/* Background image */}
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1636036756993-dc5dfca1f2d6?w=1600&q=80)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+      {/* Gradient overlay */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #1A1A2E 30%, rgba(26,26,46,0.72) 65%, rgba(26,26,46,0.35) 100%)' }} />
+      {/* Grid pattern */}
+      <div aria-hidden="true" style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 10, maxWidth: 1200, margin: '0 auto', padding: '120px 24px 80px', width: '100%' }}>
+
+        <p style={{ color: '#E94F37', fontSize: 13, fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 24, animation: 'blur-in 0.8s ease-out 0.2s both' }}>
+          Taller Mecánico en Quito, Ecuador
+        </p>
+
+        <h1 style={{ fontFamily: PF, fontSize: 'clamp(42px, 7vw, 80px)', fontWeight: 700, color: '#F5F5F0', lineHeight: 1.1, marginBottom: 24, maxWidth: 760, animation: 'blur-in 0.8s ease-out 0.4s both' }}>
+          Tu auto seguro, siempre en{' '}
+          <em style={{ color: '#E94F37', fontStyle: 'italic' }}>manos expertas.</em>
+        </h1>
+
+        <p style={{ fontSize: 'clamp(16px, 2vw, 19px)', color: 'rgba(245,245,240,0.75)', maxWidth: 580, lineHeight: 1.75, marginBottom: 40, animation: 'blur-in 0.8s ease-out 0.6s both' }}>
+          Más de 8 años brindando diagnóstico transparente, repuestos de calidad
+          y técnicos certificados. Sin cobros sorpresa, con garantía por escrito.
+        </p>
+
+        {/* CTA Buttons */}
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 48, animation: 'blur-in 0.8s ease-out 0.7s both' }}>
+          <Link
+            to="/dashboard"
+            aria-label="Agenda tu cita en el taller ahora"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#E94F37', color: '#F5F5F0', padding: '14px 28px', borderRadius: 50, fontSize: 15, fontWeight: 600, textDecoration: 'none', transition: 'background 0.2s, transform 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#F4721E'; e.currentTarget.style.transform = 'scale(1.03)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#E94F37'; e.currentTarget.style.transform = 'scale(1)'; }}
           >
-            {item.label}
+            Agenda tu cita ahora <ArrowRight size={16} />
+          </Link>
+          <a
+            href="#servicios"
+            aria-label="Ver nuestros servicios"
+            style={{ display: 'inline-flex', alignItems: 'center', padding: '14px 28px', borderRadius: 50, fontSize: 15, fontWeight: 600, textDecoration: 'none', border: '1.5px solid rgba(245,245,240,0.35)', color: '#F5F5F0', transition: 'border-color 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(245,245,240,0.8)')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(245,245,240,0.35)')}
+          >
+            Ver nuestros servicios
           </a>
-        ))}
+        </div>
+
+        {/* Trust pills */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', animation: 'blur-in 0.8s ease-out 0.85s both' }}>
+          {['Respuesta en menos de 2 horas', 'Garantía en todos los trabajos', 'Sin cobros sorpresa'].map(pill => (
+            <span key={pill} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(245,245,240,0.85)', padding: '6px 14px', borderRadius: 50, fontSize: 13 }}>
+              <Check size={13} color="#2ECC71" strokeWidth={2.5} />
+              {pill}
+            </span>
+          ))}
+        </div>
       </div>
 
-      {/* Hero Section Container */}
-      <section className="relative w-full h-screen overflow-hidden flex flex-col" id="hero-frame">
+    </section>
+  );
+}
 
-        {/* ── Background ── */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={bgImageUrl}
-            alt="WLAS MOTOR taller automotriz"
-            className="w-full h-full object-cover"
-            style={{ filter: 'grayscale(100%) brightness(0.5)', transform: 'scale(1.06)' }}
-            fetchPriority="high"
-            referrerPolicy="no-referrer"
-          />
-          {/* gradient: heavy from left + bottom */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.15) 100%)' }} />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #000 0%, rgba(0,0,0,0.5) 35%, transparent 65%)' }} />
-          {/* grain texture overlay */}
-          <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")', backgroundSize: '180px' }} />
-        </div>
+// ─── Trust Badges ─────────────────────────────────────────────────────────────
+function TrustBadgesSection() {
+  const ref = useReveal();
+  const badges = [
+    { Icon: Wrench,        title: 'Técnicos Certificados',    desc: 'Todo nuestro equipo cuenta con formación técnica especializada y certificaciones vigentes.' },
+    { Icon: ShieldCheck,   title: 'Garantía en Escrito',      desc: 'Cada trabajo tiene respaldo documental. Si algo falla en el período, lo resolvemos sin costo.' },
+    { Icon: Clock,         title: 'Entrega Puntual',          desc: 'Respetamos los tiempos prometidos. Te avisamos con anticipación si hay algún cambio.' },
+    { Icon: MessageCircle, title: 'Diagnóstico Transparente', desc: 'Te explicamos qué tiene tu vehículo, qué se necesita y cuánto cuesta. Sin letra pequeña.' },
+  ];
 
-        {/* ── Gold accent line top ── */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] z-20" style={{ background: 'linear-gradient(90deg, transparent 0%, #C9A84C 30%, #F0D080 50%, #C9A84C 70%, transparent 100%)', animation: 'fadeIn 1.2s ease both' }} />
-
-        {/* ── Main content ── */}
-        <div className="relative z-10 flex-1 flex flex-col justify-end pb-28 px-8 md:px-16 lg:px-20">
-
-          {/* Logo + tagline lockup */}
-          <div className="flex items-center gap-5 mb-10" style={{ animation: 'fadeUp 0.9s 0.1s ease both', opacity: 0 }}>
-            <img
-              src={logo}
-              alt="WLAS MOTOR"
-              className="w-auto object-contain"
-              style={{ height: '68px' }}
-            />
-            <div className="w-px h-9 bg-white/20" />
-            <span className="text-[9px] uppercase tracking-[0.35em] text-white/40 font-bold leading-relaxed">
-              Ingeniería<br />sin límites
-            </span>
-          </div>
-
-          {/* Headline */}
-          <div style={{ animation: 'fadeUp 0.9s 0.25s ease both', opacity: 0 }}>
-            <h1
-              className="font-display uppercase leading-none"
-              style={{ fontSize: 'clamp(3.8rem, 10vw, 10rem)', letterSpacing: '-0.02em' }}
-            >
-              <span className="text-white block">ELEVAMOS</span>
-              <span className="block" style={{ WebkitTextStroke: '1.5px rgba(255,255,255,0.22)', color: 'transparent' }}>EL ESTÁNDAR</span>
-            </h1>
-          </div>
-
-          {/* Gold divider */}
-          <div className="flex items-center gap-5 my-7" style={{ animation: 'fadeUp 0.9s 0.4s ease both', opacity: 0 }}>
-            <div className="h-px w-32" style={{ background: 'linear-gradient(to right, #C9A84C, transparent)' }} />
-            <span className="text-[9px] uppercase tracking-[0.3em] text-white/25">Mecánica automotriz de precisión</span>
-          </div>
-
-          {/* Description + CTA */}
-          <div className="flex flex-col md:flex-row md:items-end gap-8 md:gap-16" style={{ animation: 'fadeUp 0.9s 0.55s ease both', opacity: 0 }}>
-            <p className="text-white/45 text-base leading-relaxed max-w-sm">
-              Diagnóstico computarizado, refacciones OEM y técnicos certificados. Tu vehículo merece el estándar más alto.
-            </p>
-            <div className="flex items-center gap-3">
-              <a
-                href="https://wa.me/1234567890?text=Hola,%20me%20gustar%C3%ADa%20agendar%20una%20revisi%C3%B3n."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 group"
-              >
-                <span
-                  className="px-9 py-4 rounded-full text-xs font-bold uppercase tracking-[0.2em] transition-all duration-300 group-hover:scale-105"
-                  style={{ background: '#C9A84C', color: '#000' }}
-                >
-                  Reservar Cita
-                </span>
-                <span className="w-12 h-12 rounded-full border border-white/25 flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-black group-hover:border-white">
-                  <ArrowUpRight className="w-5 h-5" />
-                </span>
-              </a>
+  return (
+    <section aria-label="Por qué confiar en Wlas Motor" style={{ background: '#16213E', padding: '72px 0' }}>
+      <div
+        ref={ref}
+        className="badges-grid"
+        style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}
+      >
+        {badges.map(({ Icon, title, desc }, i) => (
+          <div
+            key={title}
+            className="reveal-card trust-badge"
+            style={{ padding: '40px 32px', borderRight: i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}
+          >
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(233,79,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              <Icon size={24} color="#E94F37" />
             </div>
+            <h3 style={{ color: '#F5F5F0', fontWeight: 700, fontSize: 16, marginBottom: 10 }}>{title}</h3>
+            <p style={{ color: '#8892A4', fontSize: 14, lineHeight: 1.65 }}>{desc}</p>
           </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── Bento Grid ───────────────────────────────────────────────────────────────
+function BentoGridSection() {
+  const ref = useReveal();
+
+  const cardBase: React.CSSProperties = {
+    background: '#fff', borderRadius: 24, padding: 32,
+    boxShadow: CARD_SHADOW, overflow: 'hidden',
+  };
+
+  return (
+    <section id="nosotros" aria-label="Quiénes somos" style={{ background: '#FAFAF8', padding: '96px 0' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: 56 }}>
+          <p style={{ color: '#E94F37', fontSize: 13, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14 }}>— Quiénes Somos</p>
+          <h2 style={{ fontFamily: PF, fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 700, color: '#1A1A2E', marginBottom: 16 }}>
+            Mecánica de confianza,<br />respaldada por resultados.
+          </h2>
+          <p style={{ color: '#8892A4', fontSize: 17, maxWidth: 540, lineHeight: 1.7 }}>
+            Desde 2016, cuidamos los autos de las familias de Quito con honestidad, tecnología y garantía real.
+          </p>
         </div>
 
-        {/* ── Bottom status bar ── */}
+        {/* Bento grid */}
         <div
-          className="absolute bottom-0 left-0 right-0 z-20 flex justify-between items-center px-8 md:px-16 lg:px-20 py-5"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(12px)', animation: 'fadeIn 1s 0.8s ease both', opacity: 0 }}
+          ref={ref}
+          className="bento-grid"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}
         >
-          <div className="flex gap-10">
-            <div>
-              <p className="text-[9px] uppercase tracking-widest text-white/25 mb-1">Ubicación</p>
-              <p className="text-[11px] font-bold text-white uppercase tracking-wider">Distrito Tecnológico</p>
+          {/* Card 1 — Large history */}
+          <div className="reveal-card bento-card" style={{ ...cardBase, gridColumn: '1 / 3', gridRow: '1 / 2' }}>
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(233,79,55,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              <Clock size={26} color="#E94F37" />
             </div>
-            <div>
-              <p className="text-[9px] uppercase tracking-widest text-white/25 mb-1">Horario</p>
-              <p className="text-[11px] font-bold text-white uppercase tracking-wider">Lun – Sáb / 08:00 – 18:00</p>
-            </div>
-          </div>
-          <div className="hidden md:flex items-center gap-2.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" style={{ boxShadow: '0 0 8px #34d399', animation: 'fadeIn 0.5s ease infinite alternate' }} />
-            <span className="text-[9px] uppercase tracking-[0.3em] text-white/30">Disponible ahora</span>
-          </div>
-        </div>
-
-      </section>
-
-      {/* Services Section */}
-      <section className="bg-zinc-50 py-24 px-4 md:px-8 border-t border-zinc-200" id="services">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          
-          {/* Left Column: Image Area */}
-          <div className="relative rounded-[2rem] overflow-hidden border border-zinc-200 bg-zinc-100 shadow-xl shadow-zinc-200/50 h-[400px] md:h-full md:min-h-[600px]" id="services-image-container">
-            {/* Single Car Image filling the container */}
-            <img 
-              src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=2070&auto=format&fit=crop" 
-              alt="Servicio Automotriz" 
-              className="absolute inset-0 w-full h-full object-cover object-center transition-transform hover:scale-105 duration-700"
-            />
-          </div>
-
-          {/* Right Column: Text & Features */}
-          <div className="flex flex-col">
-            <h3 className="text-zinc-500 font-bold tracking-[0.15em] text-[10px] md:text-xs uppercase mb-6" id="services-subtitle">
-              Nuestros Servicios
+            <h3 style={{ fontFamily: PF, fontSize: 26, fontWeight: 700, color: '#1A1A2E', marginBottom: 12 }}>
+              Más de 8 años sirviendo a Quito
             </h3>
-            
-            <h2 className="text-4xl md:text-[3.5rem] leading-[1.1] font-display font-medium text-zinc-900 tracking-tight mb-6 text-balance" id="services-heading">
-              Transformamos tu vehículo con servicio experto
-            </h2>
-            
-            <p className="text-zinc-500 text-lg leading-relaxed mb-10 max-w-xl" id="services-description">
-              Redefinimos el cuidado automotriz con técnicos expertos y tecnología de punta, logrando velocidad, exactitud y confianza en el camino.
-            </p>
-            
-            <Link to="/dashboard/appointments" className="flex items-center gap-3 bg-zinc-900 text-white px-6 py-3 rounded-full w-fit shadow-lg shadow-zinc-900/20 hover:scale-[1.02] active:scale-95 transition-all group mb-16" id="services-cta">
-              <span className="font-semibold text-sm">Reservar una demostración</span>
-              <div className="bg-white text-zinc-900 rounded-full w-6 h-6 flex items-center justify-center group-hover:bg-zinc-100 transition-colors">
-                <ArrowUpRight className="w-4 h-4" />
-              </div>
-            </Link>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-zinc-200 pt-10">
-              <div className="flex flex-col gap-4">
-                <div className="w-10 h-10 flex items-center justify-center text-zinc-500">
-                  <Activity className="w-7 h-7" strokeWidth={1.5} />
-                </div>
-                <h4 className="font-semibold text-zinc-900 text-lg leading-tight w-4/5">Diagnóstico Computarizado</h4>
-              </div>
-              
-              <div className="flex flex-col gap-4 md:border-l md:border-zinc-200 md:pl-10">
-                <div className="w-10 h-10 flex items-center justify-center text-zinc-500">
-                  <Wrench className="w-7 h-7" strokeWidth={1.5} />
-                </div>
-                <h4 className="font-semibold text-zinc-900 text-lg leading-tight w-4/5">Análisis y Mantenimiento Inteligente</h4>
-              </div>
-            </div>
-            
-          </div>
-        </div>
-      </section>
-
-      {/* Features Grid Section (New) */}
-      <section className="bg-white py-24 px-4 md:px-8" id="features">
-        <div className="max-w-6xl mx-auto flex flex-col items-center">
-          
-          <div className="text-center mb-16 max-w-2xl">
-            <h2 className="text-3xl md:text-5xl font-display font-medium text-zinc-900 tracking-tight mb-6">
-              Mantenimiento integral para el rendimiento óptimo
-            </h2>
-            <p className="text-zinc-500 text-lg">
-              Confía en nuestras herramientas verificadas y nuestro equipo especializado para mantener tu vehículo seguro y en perfectas condiciones.
+            <p style={{ color: '#4A5568', fontSize: 15, lineHeight: 1.75 }}>
+              Comenzamos como un taller pequeño en el norte de Quito. Hoy contamos con bahías equipadas, escáner OBD profesional y un equipo de mecánicos certificados comprometidos con la excelencia.
             </p>
           </div>
 
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full mb-16">
-            
-            {/* Card 1 */}
-            <div className="bg-zinc-50 border border-zinc-100 rounded-3xl p-8 flex flex-col items-center text-center transition-all hover:shadow-xl hover:shadow-zinc-200/50 hover:-translate-y-1">
-              <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-zinc-100 flex items-center justify-center mb-6 text-emerald-500">
-                <Droplet strokeWidth={1.5} className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-zinc-900 mb-3 tracking-tight">Cambio de Aceite</h3>
-              <p className="text-zinc-500 text-sm leading-relaxed">
-                Lubricantes premium que protegen el motor, reducen el desgaste y mejoran la eficiencia en cada kilómetro.
-              </p>
+          {/* Card 2 — OBD */}
+          <div className="reveal-card bento-card" style={{ ...cardBase, gridColumn: '3 / 4', gridRow: '1 / 2' }}>
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(233,79,55,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              <Monitor size={26} color="#E94F37" />
             </div>
-
-            {/* Card 2 */}
-            <div className="bg-zinc-50 border border-zinc-100 rounded-3xl p-8 flex flex-col items-center text-center transition-all hover:shadow-xl hover:shadow-zinc-200/50 hover:-translate-y-1">
-              <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-zinc-100 flex items-center justify-center mb-6 text-rose-500">
-                <Disc strokeWidth={1.5} className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-zinc-900 mb-3 tracking-tight">Sistema de Frenos</h3>
-              <p className="text-zinc-500 text-sm leading-relaxed">
-                Revisión, ajuste y cambio de pastillas o discos para garantizar tu seguridad absoluta al detenerte.
-              </p>
-            </div>
-
-            {/* Card 3 */}
-            <div className="bg-zinc-50 border border-zinc-100 rounded-3xl p-8 flex flex-col items-center text-center transition-all hover:shadow-xl hover:shadow-zinc-200/50 hover:-translate-y-1">
-              <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-zinc-100 flex items-center justify-center mb-6 text-blue-500">
-                <Car strokeWidth={1.5} className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-zinc-900 mb-3 tracking-tight">Suspensión y Dirección</h3>
-              <p className="text-zinc-500 text-sm leading-relaxed">
-                Alineación, balanceo y ajuste de amortiguadores para un manejo suave y control perfecto en curvas.
-              </p>
-            </div>
-
-            {/* Card 4 */}
-            <div className="bg-zinc-50 border border-zinc-100 rounded-3xl p-8 flex flex-col items-center text-center transition-all hover:shadow-xl hover:shadow-zinc-200/50 hover:-translate-y-1">
-              <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-zinc-100 flex items-center justify-center mb-6 text-amber-500">
-                <Battery strokeWidth={1.5} className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-zinc-900 mb-3 tracking-tight">Sistema Eléctrico</h3>
-              <p className="text-zinc-500 text-sm leading-relaxed">
-                Diagnóstico de batería, alternador y cableado para asegurar un arranque confiable y energía constante.
-              </p>
-            </div>
-
-            {/* Card 5 */}
-            <div className="bg-zinc-50 border border-zinc-100 rounded-3xl p-8 flex flex-col items-center text-center transition-all hover:shadow-xl hover:shadow-zinc-200/50 hover:-translate-y-1">
-              <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-zinc-100 flex items-center justify-center mb-6 text-cyan-500">
-                <Thermometer strokeWidth={1.5} className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-zinc-900 mb-3 tracking-tight">Aire Acondicionado</h3>
-              <p className="text-zinc-500 text-sm leading-relaxed">
-                Recarga de gas, limpieza de filtros y revisión de fugas para mantener el clima ideal en la cabina.
-              </p>
-            </div>
-
-            {/* Card 6 */}
-            <div className="bg-zinc-50 border border-zinc-100 rounded-3xl p-8 flex flex-col items-center text-center transition-all hover:shadow-xl hover:shadow-zinc-200/50 hover:-translate-y-1">
-              <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-zinc-100 flex items-center justify-center mb-6 text-indigo-500">
-                <ShieldCheck strokeWidth={1.5} className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-zinc-900 mb-3 tracking-tight">Manteamiento Preventivo</h3>
-              <p className="text-zinc-500 text-sm leading-relaxed">
-                Inspección general de fluidos, bandas y filtros. La mejor estrategia para evitar reparaciones costosas.
-              </p>
-            </div>
-            
+            <h3 style={{ fontSize: 17, fontWeight: 700, color: '#1A1A2E', marginBottom: 10 }}>Diagnóstico con escáner OBD</h3>
+            <p style={{ color: '#4A5568', fontSize: 14, lineHeight: 1.65 }}>Tecnología de diagnóstico computarizado para detectar fallas exactas con informe escrito.</p>
           </div>
 
-          <Link to="/dashboard/appointments" className="flex items-center gap-3 bg-zinc-900 text-white px-8 py-4 rounded-full w-fit shadow-lg shadow-zinc-900/20 hover:scale-[1.02] active:scale-95 transition-all group">
-            <span className="font-semibold text-sm tracking-wide">Agendar Revisión Completa</span>
-            <div className="bg-white text-zinc-900 rounded-full w-6 h-6 flex items-center justify-center group-hover:bg-zinc-100 transition-colors">
-              <ArrowUpRight className="w-4 h-4" />
+          {/* Card 3 — All brands */}
+          <div className="reveal-card bento-card" style={{ ...cardBase, gridColumn: '4 / 5', gridRow: '1 / 2' }}>
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(233,79,55,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              <Star size={26} color="#E94F37" />
             </div>
-          </Link>
+            <h3 style={{ fontSize: 17, fontWeight: 700, color: '#1A1A2E', marginBottom: 10 }}>Todas las marcas, una sola dirección</h3>
+            <p style={{ color: '#4A5568', fontSize: 14, lineHeight: 1.65 }}>Toyota, Chevrolet, Kia, Hyundai, Mazda y más. Experiencia en todas las marcas del mercado.</p>
+          </div>
 
-        </div>
-      </section>
-
-      {/* Benefits / Why Choose Us Section */}
-      <section className="bg-zinc-50 py-24 px-4 md:px-8 border-t border-zinc-200" id="benefits">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-16 items-center">
-            {/* Left Content */}
-            <div className="w-full md:w-1/2">
-              <h3 className="text-zinc-500 font-bold tracking-[0.15em] text-[10px] md:text-xs uppercase mb-6" id="benefits-subtitle">
-                Por Qué Elegirnos
-              </h3>
-              <h2 className="text-4xl md:text-5xl font-display font-medium text-zinc-900 tracking-tight mb-8">
-                El estándar de excelencia en tu ciudad
-              </h2>
-              <p className="text-zinc-600 text-lg leading-relaxed mb-10">
-                No somos un taller convencional. Somos un centro de ingeniería automotriz dedicado a la precisión. Combinamos técnicos formados en concesionarios con la tecnología de diagnóstico más avanzada disponible en el mercado.
-              </p>
-              
-              <div className="space-y-6">
-                {[
-                  "Garantía de 12 meses en todas las reparaciones mayores",
-                  "Transparencia total: te mostramos el problema antes de arreglarlo",
-                  "Refacciones originales o de calidad superior OEM",
-                  "Equipo de escaneo actualizado para vehículos 2026"
-                ].map((benefit, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <CheckCircle2 className="w-6 h-6 text-zinc-900 shrink-0 mt-0.5" strokeWidth={2} />
-                    <span className="text-zinc-700 font-medium">{benefit}</span>
-                  </div>
-                ))}
-              </div>
+          {/* Card 4 — Spare parts */}
+          <div className="reveal-card bento-card" style={{ ...cardBase, gridColumn: '1 / 3', gridRow: '2 / 3' }}>
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(233,79,55,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+              <Package size={26} color="#E94F37" />
             </div>
+            <h3 style={{ fontSize: 17, fontWeight: 700, color: '#1A1A2E', marginBottom: 10 }}>Solo repuestos de calidad</h3>
+            <p style={{ color: '#4A5568', fontSize: 14, lineHeight: 1.65 }}>Trabajamos únicamente con repuestos originales o de primera calidad. Sin atajos, sin riesgos para tu vehículo.</p>
+          </div>
 
-            {/* Right Image/Stats grid */}
-            <div className="w-full md:w-1/2 grid grid-cols-2 gap-4">
-              <div className="bg-white p-8 rounded-[2rem] border border-zinc-200 shadow-sm flex flex-col justify-center items-center text-center">
-                <Clock className="w-10 h-10 text-zinc-300 mb-4" strokeWidth={1.5} />
-                <span className="text-4xl font-display font-medium text-zinc-900 mb-2">45m</span>
-                <span className="text-zinc-500 text-sm font-medium">Diagnóstico Promedio</span>
-              </div>
-              <div className="bg-zinc-900 p-8 rounded-[2rem] shadow-xl flex flex-col justify-center items-center text-center">
-                <Trophy className="w-10 h-10 text-zinc-600 mb-4" strokeWidth={1.5} />
-                <span className="text-4xl font-display font-medium text-white mb-2">15+</span>
-                <span className="text-zinc-400 text-sm font-medium">Años de Experiencia</span>
-              </div>
-              <div className="col-span-2 relative rounded-[2rem] overflow-hidden h-64 border border-zinc-200">
-                <img 
-                  src="https://images.unsplash.com/photo-1493238792000-8113da705763?q=80&w=2070&auto=format&fit=crop" 
-                  alt="Técnico Especializado" 
-                  className="w-full h-full object-cover" 
-                />
-              </div>
+          {/* Card 5 — Photo tall */}
+          <div
+            className="reveal-card bento-card"
+            aria-label="Mecánicos de Wlas Motor trabajando"
+            style={{
+              gridColumn: '3 / 5', gridRow: '1 / 3', minHeight: 400,
+              padding: 0, position: 'relative', overflow: 'hidden', borderRadius: 24,
+              backgroundImage: 'url(https://images.unsplash.com/photo-1574016397280-8fc4a3b17a30?w=800&q=80)',
+              backgroundSize: 'cover', backgroundPosition: 'center',
+              boxShadow: CARD_SHADOW,
+            }}
+          >
+            <div style={{ position: 'absolute', bottom: 24, left: 24, background: '#E94F37', borderRadius: 16, padding: '16px 20px', maxWidth: 220 }}>
+              <p style={{ color: '#fff', fontWeight: 700, fontSize: 15, marginBottom: 4 }}>500+ vehículos atendidos en 2025</p>
+              <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>⭐ 4.8 / 5.0 en Google</p>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* Expertise / Use Cases Section */}
-      <section className="bg-white py-24 px-4 md:px-8 border-t border-zinc-200" id="expertise">
-        <div className="max-w-7xl mx-auto flex flex-col items-center">
-          <div className="text-center mb-16 max-w-2xl">
-            <h2 className="text-3xl md:text-5xl font-display font-medium text-zinc-900 tracking-tight mb-6">
-              Expertos en todas las gamas
-            </h2>
-            <p className="text-zinc-500 text-lg">
-              Desde mantenimientos de rutina en utilitarios hasta diagnósticos complejos en vehículos premium europeos y asiáticos.
-            </p>
-          </div>
+// ─── Services ─────────────────────────────────────────────────────────────────
+function ServicesSection() {
+  const [activeFilter, setActiveFilter] = useState('Todos');
+  const [fading, setFading] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [slider, setSlider] = useState({ left: 6, width: 80 });
+  const handleFilter = useCallback((cat: string) => {
+    setFading(true);
+    setTimeout(() => { setActiveFilter(cat); setFading(false); }, 150);
+  }, []);
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
-            {[
-              { 
-                title: "Vehículos Europeos", 
-                desc: "Equipos específicos para BMW, Mercedes-Benz, Audi, Volkswagen y más. Respetamos los torques y especificaciones de fábrica.",
-                image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2070&auto=format&fit=crop"
-              },
-              { 
-                title: "Flotillas Comerciales", 
-                desc: "Planes de mantenimiento preventivo diseñados para minimizar el tiempo de inactividad de tus vehículos de trabajo.",
-                image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=2072&auto=format&fit=crop"
-              },
-              { 
-                title: "Vehículos Híbridos", 
-                desc: "Técnicos certificados en el manejo seguro y diagnóstico de sistemas híbridos de alta tensión y baterías.",
-                image: "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?q=80&w=2072&auto=format&fit=crop"
-              }
-            ].map((useCase, i) => (
-              <div key={i} className="group cursor-pointer">
-                <div className="w-full h-64 rounded-[2rem] mb-6 overflow-hidden border border-zinc-200 shadow-sm relative">
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors z-10" />
-                  <img src={useCase.image} alt={useCase.title} className="w-full h-full object-cover grayscale mix-blend-multiply group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" />
-                </div>
-                <h4 className="text-xl font-bold text-zinc-900 mb-3">{useCase.title}</h4>
-                <p className="text-zinc-500 leading-relaxed">{useCase.desc}</p>
-              </div>
+  useEffect(() => {
+    const idx = CATEGORIES.indexOf(activeFilter);
+    const btn = btnRefs.current[idx];
+    if (btn) setSlider({ left: btn.offsetLeft, width: btn.offsetWidth });
+  }, [activeFilter]);
+
+  const filtered = activeFilter === 'Todos' ? SERVICES : SERVICES.filter(s => s.category === activeFilter);
+
+  return (
+    <section id="servicios" aria-label="Nuestros servicios" style={{ background: '#1A1A2E', padding: '96px 0' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: 48 }}>
+          <p style={{ color: '#E94F37', fontSize: 13, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14 }}>— Nuestros Servicios</p>
+          <h2 style={{ fontFamily: PF, fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 700, color: '#F5F5F0', marginBottom: 16 }}>
+            Todo lo que tu auto necesita,<br />en un solo lugar.
+          </h2>
+          <p style={{ color: '#8892A4', fontSize: 17, maxWidth: 500, lineHeight: 1.7 }}>
+            Diagnóstico, mantenimiento y reparación con precios claros y garantía incluida.
+          </p>
+        </div>
+
+        {/* Filter bar */}
+        <div className="filter-scroll" style={{ marginBottom: 40 }}>
+          <div
+            ref={containerRef}
+            role="tablist"
+            aria-label="Filtrar por categoría de servicio"
+            style={{ position: 'relative', background: '#16213E', padding: 6, borderRadius: 50, display: 'inline-flex', border: '1px solid rgba(255,255,255,0.08)', whiteSpace: 'nowrap' }}
+          >
+            {/* Animated slider */}
+            <div
+              aria-hidden="true"
+              style={{ position: 'absolute', top: 6, bottom: 6, left: slider.left, width: slider.width, background: '#E94F37', borderRadius: 50, transition: 'left 300ms ease, width 300ms ease', pointerEvents: 'none' }}
+            />
+            {CATEGORIES.map((cat, i) => (
+              <button
+                key={cat}
+                ref={el => { btnRefs.current[i] = el; }}
+                onClick={() => handleFilter(cat)}
+                role="tab"
+                aria-selected={activeFilter === cat}
+                aria-label={`Filtrar servicios: ${cat}`}
+                style={{ position: 'relative', zIndex: 1, background: 'transparent', border: 'none', padding: '8px 18px', borderRadius: 50, fontSize: 14, fontWeight: 500, cursor: 'pointer', color: activeFilter === cat ? '#F5F5F0' : '#8892A4', transition: 'color 0.2s', whiteSpace: 'nowrap' }}
+              >
+                {cat}
+              </button>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* Testimonials Section */}
-      <section className="bg-zinc-900 py-32 px-4 md:px-8" id="testimonials">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col items-center text-center mb-20">
-            <div className="flex gap-1 mb-6 text-amber-400">
-              {[1,2,3,4,5].map((star) => <Star key={star} fill="currentColor" strokeWidth={0} className="w-6 h-6" />)}
-            </div>
-            <h2 className="text-3xl md:text-[3.5rem] leading-[1.1] font-display font-medium text-white tracking-tight max-w-3xl">
-              "El único taller al que confío mi vehículo. Diagnósticos precisos sin costos inflados."
-            </h2>
-            <div className="mt-10 flex items-center justify-center gap-4">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-zinc-700">
-                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974&auto=format&fit=crop" alt="Avatar Cliente" className="w-full h-full object-cover" />
+        {/* Services grid */}
+        <div
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20, opacity: fading ? 0 : 1, transition: 'opacity 0.3s ease' }}
+        >
+          {filtered.map(s => (
+            <div
+              key={s.id}
+              className="service-card"
+              style={{ background: '#16213E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 24, padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}
+            >
+              <span style={{ alignSelf: 'flex-start', fontSize: 11, fontWeight: 600, background: 'rgba(233,79,55,0.12)', color: '#E94F37', padding: '4px 10px', borderRadius: 50 }}>
+                {s.badge}
+              </span>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(233,79,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <s.Icon size={22} color="#E94F37" />
               </div>
-              <div className="text-left">
-                <p className="text-white font-bold text-sm">Ricardo Mendes</p>
-                <p className="text-zinc-400 text-xs">Propietario de Audi A4</p>
+              <h3 style={{ fontSize: 15, fontWeight: 600, color: '#F5F5F0', lineHeight: 1.35 }}>{s.name}</h3>
+              <p style={{ fontSize: 13, color: '#8892A4', lineHeight: 1.6, flexGrow: 1 }}>{s.description}</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ fontFamily: JB, fontSize: 18, fontWeight: 600, color: '#F5F5F0' }}>{s.price}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#8892A4' }}>
+                  <Clock size={12} /> {s.duration}
+                </span>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer Section */}
-      <footer className="bg-black text-white pt-24 pb-12 px-4 md:px-8 border-t border-zinc-800" id="footer">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-            
-            {/* Brand Logo & Info */}
-            <div className="lg:col-span-1">
-              <h2 className="font-display text-2xl font-bold tracking-tighter uppercase mb-6 flex items-center gap-3">
-                <img src={logo} alt="WLAS MOTOR" className="h-8 w-auto bg-transparent object-contain brightness-0 invert" />
-                WLAS MOTOR<span className="text-zinc-500 text-xl">.</span>
-              </h2>
-              <p className="text-zinc-500 text-sm leading-relaxed mb-8">
-                Ingeniería sin límites. Elevamos el estándar de la mecánica automotriz con precisión y tecnología.
-              </p>
-              <Link to="/dashboard/appointments" className="px-6 py-2 rounded-full border border-zinc-700 text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-colors w-fit">
-                Reservar Cita
+              <Link
+                to="/dashboard"
+                aria-label={`Agendar ${s.name}`}
+                style={{ fontSize: 13, fontWeight: 600, color: '#E94F37', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'gap 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.gap = '8px')}
+                onMouseLeave={e => (e.currentTarget.style.gap = '4px')}
+              >
+                Agendar este servicio <ArrowRight size={13} />
               </Link>
             </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
-            {/* Contact Links */}
-            <div className="flex flex-col gap-4">
-              <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-zinc-400 mb-2">Contacto</h4>
-              <a href="#" className="text-zinc-300 hover:text-white transition-colors flex items-center gap-3 text-sm">
-                <Phone className="w-4 h-4 text-zinc-500" />
-                (555) 123-4567
-              </a>
-              <a href="#" className="text-zinc-300 hover:text-white transition-colors flex items-center gap-3 text-sm">
-                <Mail className="w-4 h-4 text-zinc-500" />
-                contacto@wlasmotor.com
-              </a>
-              <p className="text-zinc-300 flex items-start gap-3 text-sm">
-                <MapPin className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />
-                <span>Av. Tecnológica 404, Zona Industrial<br/>Ciudad, CP 90000</span>
-              </p>
+// ─── Testimonials ─────────────────────────────────────────────────────────────
+function TestimonialCard({ t }: { t: Testimonial }) {
+  return (
+    <div style={{ background: '#fff', borderRadius: 24, padding: 24, marginBottom: 16, boxShadow: CARD_SHADOW }}>
+      <div style={{ display: 'flex', gap: 3, marginBottom: 14 }}>
+        {[1,2,3,4,5].map(n => <Star key={n} size={15} color="#F59E0B" fill="#F59E0B" />)}
+      </div>
+      <p style={{ fontFamily: PF, fontStyle: 'italic', fontSize: 15, lineHeight: 1.75, color: '#2D3748', marginBottom: 18 }}>{t.text}</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', background: t.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{t.initials}</div>
+        <div>
+          <p style={{ fontWeight: 600, fontSize: 14, color: '#1A1A2E' }}>{t.name}</p>
+          <p style={{ fontSize: 12, color: '#8892A4' }}>{t.city} · {t.service}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TestimonialsSection() {
+  const columns: [Testimonial[], string][] = [
+    [COL_T1, 'scroll-down'],
+    [COL_T2, 'scroll-up'],
+    [COL_T3, 'scroll-down'],
+  ];
+
+  return (
+    <section id="testimonios" aria-label="Opiniones de clientes" style={{ background: '#FAFAF8', padding: '96px 0' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+
+        <div style={{ marginBottom: 56, textAlign: 'center' }}>
+          <p style={{ color: '#E94F37', fontSize: 13, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14 }}>— Lo que dicen nuestros clientes</p>
+          <h2 style={{ fontFamily: PF, fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 700, color: '#1A1A2E', marginBottom: 16 }}>
+            Más de 500 familias<br />confían en nosotros.
+          </h2>
+          <p style={{ color: '#8892A4', fontSize: 17, maxWidth: 460, margin: '0 auto', lineHeight: 1.7 }}>
+            Cada opinión representa un auto cuidado y una familia que viajó tranquila.
+          </p>
+        </div>
+
+        <div className="testimonials-outer" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, height: 640 }}>
+          {columns.map(([testimonials, dir], ci) => (
+            <div
+              key={ci}
+              className="testimonials-col"
+              style={{ overflow: 'hidden', position: 'relative', height: 640 }}
+            >
+              {/* Top gradient mask */}
+              <div aria-hidden="true" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 120, background: 'linear-gradient(to bottom, #FAFAF8, transparent)', zIndex: 10, pointerEvents: 'none' }} />
+              {/* Bottom gradient mask */}
+              <div aria-hidden="true" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120, background: 'linear-gradient(to top, #FAFAF8, transparent)', zIndex: 10, pointerEvents: 'none' }} />
+              {/* Scroll track — duplicated for seamless loop */}
+              <div className={dir}>
+                {[...testimonials, ...testimonials].map((t, i) => (
+                  <TestimonialCard key={`${t.id}-${ci}-${i}`} t={t} />
+                ))}
+              </div>
             </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
-            {/* Quick Links */}
-            <div className="flex flex-col gap-4">
-              <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-zinc-400 mb-2">Navegación</h4>
-              {["Inicio", "Servicios", "Flotillas", "Nuestra Historia", "Preguntas Frecuentes"].map((link) => (
-                <a key={link} href="#" className="text-zinc-500 hover:text-white transition-colors text-sm">
-                  {link}
-                </a>
+// ─── CTA Banner ───────────────────────────────────────────────────────────────
+function CTABannerSection() {
+  return (
+    <section aria-label="Agenda tu cita hoy" style={{ background: '#1A1A2E', padding: '96px 0' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+        <div style={{ borderRadius: 28, overflow: 'hidden', position: 'relative', backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=80)', backgroundSize: 'cover', backgroundPosition: 'center', padding: '72px 56px' }}>
+          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(26,26,46,0.92), rgba(233,79,55,0.75))' }} />
+
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h2 style={{ fontFamily: PF, fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 700, color: '#F5F5F0', marginBottom: 16, maxWidth: 600 }}>
+              ¿Tu auto necesita atención? Nosotros lo resolvemos hoy.
+            </h2>
+            <p style={{ color: 'rgba(245,245,240,0.8)', fontSize: 17, marginBottom: 48, maxWidth: 520, lineHeight: 1.7 }}>
+              Agenda en minutos, recibe confirmación inmediata y entrega puntual garantizada.
+            </p>
+
+            {/* Value props */}
+            <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', marginBottom: 48 }}>
+              {[
+                { Icon: Calendar,   title: 'Reserva en minutos',           sub: 'Sin llamadas, sin esperas' },
+                { Icon: DollarSign, title: 'Precios fijos y transparentes', sub: 'Sin cobros ocultos' },
+                { Icon: Car,        title: 'Taller equipado',              sub: 'Tecnología de diagnóstico de punta' },
+              ].map(({ Icon, title, sub }) => (
+                <div key={title} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon size={20} color="#F5F5F0" />
+                  </div>
+                  <div>
+                    <p style={{ color: '#F5F5F0', fontWeight: 600, fontSize: 15 }}>{title}</p>
+                    <p style={{ color: 'rgba(245,245,240,0.65)', fontSize: 13 }}>{sub}</p>
+                  </div>
+                </div>
               ))}
             </div>
 
-            {/* Hours */}
-            <div className="flex flex-col gap-4">
-              <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-zinc-400 mb-2">Horarios</h4>
-              <div className="flex justify-between text-sm text-zinc-300 border-b border-zinc-800 pb-2">
-                <span>Lunes - Viernes</span>
-                <span className="text-zinc-500">08:00 - 18:00</span>
-              </div>
-              <div className="flex justify-between text-sm text-zinc-300 border-b border-zinc-800 pb-2">
-                <span>Sábado</span>
-                <span className="text-zinc-500">08:00 - 14:00</span>
-              </div>
-              <div className="flex justify-between text-sm text-zinc-300 pb-2">
-                <span>Domingo</span>
-                <span className="text-zinc-600">Cerrado</span>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-zinc-800 text-xs text-zinc-600">
-            <p>© 2026 WLAS MOTOR. Todos los derechos reservados.</p>
-            <div className="flex gap-6 mt-4 md:mt-0">
-              <a href="#" className="hover:text-zinc-300 transition-colors">Privacidad</a>
-              <a href="#" className="hover:text-zinc-300 transition-colors">Términos</a>
-              <a href="#" className="hover:text-zinc-300 transition-colors">Cookies</a>
-            </div>
+            <a
+              href="https://wa.me/593999999999"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Contactar por WhatsApp para agendar"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#25D366', color: '#fff', padding: '14px 28px', borderRadius: 50, fontSize: 15, fontWeight: 600, textDecoration: 'none', boxShadow: '0 4px 20px rgba(37,211,102,0.35)', transition: 'transform 0.2s, box-shadow 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(37,211,102,0.5)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(37,211,102,0.35)'; }}
+            >
+              <MessageCircle size={18} /> Escríbenos por WhatsApp
+            </a>
           </div>
         </div>
-      </footer>
+      </div>
+    </section>
+  );
+}
 
-      {/* Floating WhatsApp Button */}
-      <a 
-        href="https://wa.me/1234567890?text=Hola,%20me%20gustar%C3%ADa%20agendar%20una%20revisi%C3%B3n%20para%20mi%20veh%C3%ADculo." 
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-green-500 text-white p-4 rounded-full shadow-lg shadow-green-500/30 hover:bg-green-600 hover:scale-110 hover:-translate-y-1 transition-all duration-300 z-50 flex items-center justify-center group"
-        aria-label="Contactar por WhatsApp"
-      >
-        <MessageCircle className="w-6 h-6 md:w-8 md:h-8" />
-        {/* Tooltip */}
-        <span className="absolute -top-10 right-0 bg-zinc-900 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-          Reserva tu cita
-        </span>
-      </a>
-    </div>
+// ─── Newsletter ───────────────────────────────────────────────────────────────
+function NewsletterSection() {
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email.trim()) setSubscribed(true);
+  };
+
+  return (
+    <section aria-label="Suscripción al boletín de Wlas Motor" style={{ background: '#16213E', padding: '96px 0' }}>
+      <div style={{ maxWidth: 600, margin: '0 auto', padding: '0 24px', textAlign: 'center' }}>
+        <p style={{ color: '#E94F37', fontSize: 13, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14 }}>— Mantente al día</p>
+        <h2 style={{ fontFamily: PF, fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 700, color: '#F5F5F0', marginBottom: 16 }}>
+          Consejos de mecánica gratis<br />en tu correo.
+        </h2>
+        <p style={{ color: '#8892A4', fontSize: 16, marginBottom: 40, lineHeight: 1.7 }}>
+          Recibe tips de mantenimiento, alertas de temporada y ofertas exclusivas para suscriptores.
+        </p>
+
+        {subscribed ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, animation: 'blur-in 0.5s ease-out both' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(46,204,113,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CheckCircle size={32} color="#2ECC71" />
+            </div>
+            <p style={{ color: '#F5F5F0', fontSize: 18, fontWeight: 600 }}>¡Gracias por suscribirte!</p>
+            <p style={{ color: '#8892A4', fontSize: 15 }}>Recibirás nuestro próximo boletín muy pronto.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'flex', background: 'rgba(245,245,240,0.07)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 50, overflow: 'hidden', marginBottom: 20 }}>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="tu@email.com"
+                required
+                aria-label="Dirección de correo electrónico"
+                style={{ flex: 1, background: 'transparent', border: 'none', padding: '14px 24px', color: '#F5F5F0', fontSize: 15, outline: 'none', minWidth: 0 }}
+              />
+              <button
+                type="submit"
+                aria-label="Suscribirse al boletín"
+                style={{ background: '#E94F37', color: '#F5F5F0', border: 'none', padding: '14px 24px', borderRadius: 50, fontWeight: 600, fontSize: 14, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#F4721E')}
+                onMouseLeave={e => (e.currentTarget.style.background = '#E94F37')}
+              >
+                Suscribirse
+              </button>
+            </div>
+          </form>
+        )}
+
+        <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: '#8892A4', fontSize: 13, marginTop: 16 }}>
+          <Lock size={13} /> Más de 800 propietarios ya están suscritos. Sin spam.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+function FooterSection() {
+  const socials = [
+    { label: 'Facebook',  href: '#', icon: <Facebook  size={16} /> },
+    { label: 'Instagram', href: '#', icon: <Instagram size={16} /> },
+    { label: 'TikTok',    href: '#', icon: <TikTokIcon /> },
+    { label: 'YouTube',   href: '#', icon: <Youtube   size={16} /> },
+  ];
+
+  const linkStyle: React.CSSProperties = { display: 'block', color: '#8892A4', fontSize: 14, textDecoration: 'none', marginBottom: 10, transition: 'color 0.2s' };
+
+  return (
+    <footer id="footer" aria-label="Pie de página de Wlas Motor" style={{ background: '#0D0D1A', borderTop: '2px solid #E94F37', padding: '80px 0 0', position: 'relative', overflow: 'hidden' }}>
+      {/* Watermark */}
+      <div aria-hidden="true" style={{ position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)', fontFamily: PF, fontSize: 'clamp(80px, 20vw, 260px)', fontWeight: 700, color: 'rgba(245,245,240,0.04)', whiteSpace: 'nowrap', userSelect: 'none', zIndex: 0, pointerEvents: 'none', lineHeight: 1 }}>
+        WLAS
+      </div>
+
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10" style={{ marginBottom: 64 }}>
+
+          {/* Col 1 — Brand */}
+          <div>
+            <img src={wlasLogo} alt="Wlas Motor" style={{ height: 42, width: 'auto', marginBottom: 16 }} />
+            <p style={{ color: '#E94F37', fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Mecánica que no miente.</p>
+            <p style={{ color: '#8892A4', fontSize: 14, lineHeight: 1.75, marginBottom: 20 }}>
+              Taller automotriz en Quito con más de 8 años cuidando los autos de las familias ecuatorianas.
+            </p>
+            <p style={{ color: '#8892A4', fontSize: 13, marginBottom: 4 }}>📍 Av. 10 de Agosto y Colón, Quito</p>
+            <p style={{ color: '#8892A4', fontSize: 13, marginBottom: 20 }}>🕐 Lun–Vie 8:00–18:00 · Sáb 8:00–14:00</p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {socials.map(s => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  aria-label={s.label}
+                  style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8892A4', textDecoration: 'none', transition: 'background 0.2s, color 0.2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#E94F37'; e.currentTarget.style.color = '#fff'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#8892A4'; }}
+                >
+                  {s.icon}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Col 2 — Servicios */}
+          <div>
+            <h4 style={{ color: '#F5F5F0', fontWeight: 700, fontSize: 15, marginBottom: 20 }}>Servicios</h4>
+            {['Cambio de Aceite', 'Diagnóstico OBD2', 'ABC de Motor', 'ABC de Frenos', 'Alineación y Balanceo', 'Revisión Pre-Compra', 'Mantenimiento 10.000 km'].map(s => (
+              <a key={s} href="#servicios" style={linkStyle}
+                onMouseEnter={e => (e.currentTarget.style.color = '#F5F5F0')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#8892A4')}
+              >{s}</a>
+            ))}
+          </div>
+
+          {/* Col 3 — Acerca de */}
+          <div>
+            <h4 style={{ color: '#F5F5F0', fontWeight: 700, fontSize: 15, marginBottom: 20 }}>Acerca de</h4>
+            {['Quiénes Somos', 'Nuestro Equipo', 'Instalaciones', 'Blog de Mantenimiento', 'Preguntas Frecuentes', 'Política de Privacidad'].map(l => (
+              <a key={l} href="#nosotros" style={linkStyle}
+                onMouseEnter={e => (e.currentTarget.style.color = '#F5F5F0')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#8892A4')}
+              >{l}</a>
+            ))}
+          </div>
+
+          {/* Col 4 — Contacto */}
+          <div>
+            <h4 style={{ color: '#F5F5F0', fontWeight: 700, fontSize: 15, marginBottom: 20 }}>Contacto</h4>
+            {[
+              { Icon: Phone,         text: '+593 99 999 9999',  href: 'tel:+593999999999' },
+              { Icon: MessageCircle, text: 'WhatsApp',          href: 'https://wa.me/593999999999' },
+              { Icon: Mail,          text: 'info@wlasmotor.ec', href: 'mailto:info@wlasmotor.ec' },
+              { Icon: MapPin,        text: 'Cómo llegar',       href: '#' },
+            ].map(({ Icon, text, href }) => (
+              <a
+                key={text}
+                href={href}
+                target={href.startsWith('http') ? '_blank' : undefined}
+                rel="noopener noreferrer"
+                aria-label={text}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#8892A4', fontSize: 14, textDecoration: 'none', marginBottom: 12, transition: 'color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#F5F5F0')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#8892A4')}
+              >
+                <Icon size={15} /> {text}
+              </a>
+            ))}
+            <Link
+              to="/dashboard"
+              aria-label="Agendar cita online"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8, background: '#E94F37', color: '#fff', padding: '10px 18px', borderRadius: 50, fontSize: 13, fontWeight: 600, textDecoration: 'none', transition: 'background 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#F4721E')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#E94F37')}
+            >
+              <Calendar size={14} /> Agendar online
+            </Link>
+          </div>
+        </div>
+
+        {/* Copyright bar */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <p style={{ color: '#8892A4', fontSize: 13 }}>© 2026 Wlas Motor. Todos los derechos reservados.</p>
+          <div style={{ display: 'flex', gap: 24 }}>
+            {['Privacidad', 'Términos de uso'].map(l => (
+              <a key={l} href="#" style={{ color: '#8892A4', fontSize: 13, textDecoration: 'none', transition: 'color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#F5F5F0')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#8892A4')}
+              >{l}</a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ─── WhatsApp FAB ─────────────────────────────────────────────────────────────
+function WhatsAppFAB() {
+  return (
+    <a
+      href="https://wa.me/593999999999"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Contactar a Wlas Motor por WhatsApp"
+      className="whatsapp-fab"
+      style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 200, width: 56, height: 56, borderRadius: '50%', background: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(37,211,102,0.4)', textDecoration: 'none', transition: 'box-shadow 0.2s' }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 6px 28px rgba(37,211,102,0.65)')}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(37,211,102,0.4)')}
+    >
+      <MessageCircle size={26} color="#fff" />
+    </a>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+export default function App() {
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: GLOBAL_CSS }} />
+      <Navbar />
+      <main>
+        <HeroSection />
+        <TrustBadgesSection />
+        <BentoGridSection />
+        <ServicesSection />
+        <TestimonialsSection />
+        <CTABannerSection />
+        <NewsletterSection />
+      </main>
+      <FooterSection />
+      <WhatsAppFAB />
+    </>
   );
 }
