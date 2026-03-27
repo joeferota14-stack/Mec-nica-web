@@ -213,8 +213,8 @@ function Navbar() {
         {/* CTA — desktop */}
         <div className="hidden md:block">
           <Link
-            to="/dashboard"
-            aria-label="Agendar cita en el taller"
+            to="/login"
+            aria-label="Iniciar sesión"
             style={{
               background: '#E94F37', color: '#F5F5F0',
               padding: '10px 20px', borderRadius: 50,
@@ -224,7 +224,7 @@ function Navbar() {
             onMouseEnter={e => (e.currentTarget.style.background = '#F4721E')}
             onMouseLeave={e => (e.currentTarget.style.background = '#E94F37')}
           >
-            Agendar Cita
+            Iniciar Sesión
           </Link>
         </div>
 
