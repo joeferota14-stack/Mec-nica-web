@@ -26,24 +26,33 @@ const JB = "'JetBrains Mono', monospace";
 
 const CATEGORIES = ['Todos', 'Mantenimiento', 'Motor', 'Frenos', 'Suspensión', 'Diagnóstico', 'Paquetes'];
 
+const BADGE_COLORS: Record<string, { bg: string; color: string }> = {
+  'MÁS SOLICITADO':  { bg: 'rgba(249,115,22,0.12)',  color: '#F97316' },
+  'INCLUYE INFORME': { bg: 'rgba(59,130,246,0.12)',   color: '#3B82F6' },
+  'CON GARANTÍA':    { bg: 'rgba(16,185,129,0.12)',   color: '#10B981' },
+  'SEGURIDAD':       { bg: 'rgba(239,68,68,0.12)',    color: '#EF4444' },
+  'TRABAJO CRÍTICO': { bg: 'rgba(245,158,11,0.12)',   color: '#F59E0B' },
+  'PAQUETE COMPLETO':{ bg: 'rgba(139,92,246,0.12)',   color: '#8B5CF6' },
+};
+
 interface Service {
   id: number; name: string; price: string; duration: string;
   category: string; badge: string; Icon: React.ElementType; description: string;
 }
 
 const SERVICES: Service[] = [
-  { id: 1,  name: 'Cambio de Aceite y Filtro',         price: '$35',  duration: '45 min', category: 'Mantenimiento', badge: '⚡ Más Solicitado',     Icon: Droplets,    description: 'Aceite sintético o convencional, filtro nuevo y revisión de niveles.' },
-  { id: 2,  name: 'Diagnóstico Computarizado OBD2',     price: '$25',  duration: '1 h',    category: 'Diagnóstico',   badge: '🔍 Incluye Informe',    Icon: Cpu,         description: 'Lectura de códigos de falla con escáner profesional e informe escrito.' },
-  { id: 3,  name: 'ABC de Motor',                       price: '$80',  duration: '2 h',    category: 'Motor',         badge: '✅ Con Garantía',       Icon: Wrench,      description: 'Bujías, filtros de aire y combustible, correas auxiliares y más.' },
-  { id: 4,  name: 'ABC de Frenos',                      price: '$60',  duration: '1.5 h',  category: 'Frenos',        badge: '🛡️ Seguridad',         Icon: ShieldCheck, description: 'Pastillas, discos, líquido de frenos e inspección completa del sistema.' },
-  { id: 5,  name: 'Revisión de Suspensión',             price: '$30',  duration: '45 min', category: 'Suspensión',    badge: '🔍 Incluye Informe',    Icon: Car,         description: 'Inspección de amortiguadores, rótulas, terminales y barra estabilizadora.' },
-  { id: 6,  name: 'Cambio de Correa de Distribución',   price: '$120', duration: '3–4 h',  category: 'Motor',         badge: '⚠️ Trabajo Crítico',    Icon: Settings,    description: 'Correa, tensor, polea y bomba de agua según especificación de fábrica.' },
-  { id: 7,  name: 'Revisión Pre-Compra',                price: '$45',  duration: '1.5 h',  category: 'Diagnóstico',   badge: '📋 Informe Detallado',  Icon: Search,      description: 'Inspección de 50 puntos antes de comprar un vehículo usado.' },
-  { id: 8,  name: 'Mantenimiento 10.000 km',            price: '$95',  duration: '2 h',    category: 'Mantenimiento', badge: '🏆 Paquete Completo',   Icon: Package,     description: 'Aceite, filtros, frenos, suspensión, luces y diagnóstico OBD incluido.' },
-  { id: 9,  name: 'Paquete Viaje Seguro',               price: '$65',  duration: '2 h',    category: 'Paquetes',      badge: '🚗 Especial',           Icon: Navigation,  description: 'Check-up completo para carretera: frenos, suspensión, luces, líquidos.' },
-  { id: 10, name: 'Limpieza de Inyectores',             price: '$50',  duration: '1.5 h',  category: 'Motor',         badge: '⚡ Mejora Rendimiento', Icon: Zap,         description: 'Limpieza ultrasónica en banco con prueba de caudal y atomización.' },
-  { id: 11, name: 'Alineación y Balanceo',              price: '$25',  duration: '45 min', category: 'Suspensión',    badge: '✅ Con Garantía',       Icon: Target,      description: 'Alineación computarizada en 4 ruedas y balanceo de neumáticos.' },
-  { id: 12, name: 'Paquete Invierno',                   price: '$75',  duration: '2 h',    category: 'Paquetes',      badge: '❄️ Temporada',          Icon: Snowflake,   description: 'Batería, limpiaparabrisas, líquido refrigerante y revisión de luces.' },
+  { id: 1,  name: 'Cambio de Aceite y Filtro',         price: '$35',  duration: '45 min', category: 'Mantenimiento', badge: 'MÁS SOLICITADO',     Icon: Droplets,    description: 'Aceite sintético o convencional, filtro nuevo y revisión de niveles.' },
+  { id: 2,  name: 'Diagnóstico Computarizado OBD2',     price: '$25',  duration: '1 h',    category: 'Diagnóstico',   badge: 'INCLUYE INFORME',    Icon: Cpu,         description: 'Lectura de códigos de falla con escáner profesional e informe escrito.' },
+  { id: 3,  name: 'ABC de Motor',                       price: '$80',  duration: '2 h',    category: 'Motor',         badge: 'CON GARANTÍA',       Icon: Wrench,      description: 'Bujías, filtros de aire y combustible, correas auxiliares y más.' },
+  { id: 4,  name: 'ABC de Frenos',                      price: '$60',  duration: '1.5 h',  category: 'Frenos',        badge: 'SEGURIDAD',          Icon: ShieldCheck, description: 'Pastillas, discos, líquido de frenos e inspección completa del sistema.' },
+  { id: 5,  name: 'Revisión de Suspensión',             price: '$30',  duration: '45 min', category: 'Suspensión',    badge: 'INCLUYE INFORME',    Icon: Car,         description: 'Inspección de amortiguadores, rótulas, terminales y barra estabilizadora.' },
+  { id: 6,  name: 'Cambio de Correa de Distribución',   price: '$120', duration: '3–4 h',  category: 'Motor',         badge: 'TRABAJO CRÍTICO',    Icon: Settings,    description: 'Correa, tensor, polea y bomba de agua según especificación de fábrica.' },
+  { id: 7,  name: 'Revisión Pre-Compra',                price: '$45',  duration: '1.5 h',  category: 'Diagnóstico',   badge: 'INCLUYE INFORME',    Icon: Search,      description: 'Inspección de 50 puntos antes de comprar un vehículo usado.' },
+  { id: 8,  name: 'Mantenimiento 10.000 km',            price: '$95',  duration: '2 h',    category: 'Mantenimiento', badge: 'PAQUETE COMPLETO',   Icon: Package,     description: 'Aceite, filtros, frenos, suspensión, luces y diagnóstico OBD incluido.' },
+  { id: 9,  name: 'Paquete Viaje Seguro',               price: '$65',  duration: '2 h',    category: 'Paquetes',      badge: 'PAQUETE COMPLETO',   Icon: Navigation,  description: 'Check-up completo para carretera: frenos, suspensión, luces, líquidos.' },
+  { id: 10, name: 'Limpieza de Inyectores',             price: '$50',  duration: '1.5 h',  category: 'Motor',         badge: 'MÁS SOLICITADO',     Icon: Zap,         description: 'Limpieza ultrasónica en banco con prueba de caudal y atomización.' },
+  { id: 11, name: 'Alineación y Balanceo',              price: '$25',  duration: '45 min', category: 'Suspensión',    badge: 'CON GARANTÍA',       Icon: Target,      description: 'Alineación computarizada en 4 ruedas y balanceo de neumáticos.' },
+  { id: 12, name: 'Paquete Invierno',                   price: '$75',  duration: '2 h',    category: 'Paquetes',      badge: 'PAQUETE COMPLETO',   Icon: Snowflake,   description: 'Batería, limpiaparabrisas, líquido refrigerante y revisión de luces.' },
 ];
 
 interface Testimonial {
@@ -194,23 +203,21 @@ function Navbar() {
           transition: 'box-shadow 0.3s',
         }}
       >
-        {/* Left nav links — desktop */}
-        <div className="hidden md:flex items-center gap-6">
+        {/* Logo — left side */}
+        <Link to="/" aria-label="Wlas Motor — página de inicio">
+          <img src={wlasLogo} alt="Wlas Motor" style={{ height: 52, width: 'auto' }} />
+        </Link>
+
+        {/* Nav links — desktop, absolutely centered */}
+        <div className="hidden md:flex items-center gap-6" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
           {links.map(l => (
             <a key={l.label} href={l.href} className="nav-link">{l.label}</a>
           ))}
         </div>
 
-        {/* Logo — absolutely centered */}
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-          <Link to="/" aria-label="Wlas Motor — página de inicio">
-            <img src={wlasLogo} alt="Wlas Motor" style={{ height: 52, width: 'auto' }} />
-          </Link>
-        </div>
-
         <div style={{ flex: 1 }} />
 
-        {/* CTA — desktop */}
+        {/* CTA — desktop, right side */}
         <div className="hidden md:block">
           <Link
             to="/login"
@@ -295,7 +302,7 @@ function HeroSection() {
       style={{ minHeight: '100vh', background: '#1A1A2E', position: 'relative', display: 'flex', alignItems: 'center', overflow: 'hidden' }}
     >
       {/* Background image */}
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1636036756993-dc5dfca1f2d6?w=1600&q=80)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1600&q=80)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
       {/* Gradient overlay */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #1A1A2E 30%, rgba(26,26,46,0.72) 65%, rgba(26,26,46,0.35) 100%)' }} />
       {/* Grid pattern */}
@@ -320,15 +327,15 @@ function HeroSection() {
 
         {/* CTA Buttons */}
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 48, animation: 'blur-in 0.8s ease-out 0.7s both' }}>
-          <Link
-            to="/dashboard"
+          <a
+            href="#servicios"
             aria-label="Agenda tu cita en el taller ahora"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#E94F37', color: '#F5F5F0', padding: '14px 28px', borderRadius: 50, fontSize: 15, fontWeight: 600, textDecoration: 'none', transition: 'background 0.2s, transform 0.2s' }}
             onMouseEnter={e => { e.currentTarget.style.background = '#F4721E'; e.currentTarget.style.transform = 'scale(1.03)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = '#E94F37'; e.currentTarget.style.transform = 'scale(1)'; }}
           >
             Agenda tu cita ahora <ArrowRight size={16} />
-          </Link>
+          </a>
           <a
             href="#servicios"
             aria-label="Ver nuestros servicios"
@@ -557,7 +564,7 @@ function ServicesSection() {
               className="service-card"
               style={{ background: '#16213E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 24, padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}
             >
-              <span style={{ alignSelf: 'flex-start', fontSize: 11, fontWeight: 600, background: 'rgba(233,79,55,0.12)', color: '#E94F37', padding: '4px 10px', borderRadius: 50 }}>
+              <span style={{ alignSelf: 'flex-start', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', background: (BADGE_COLORS[s.badge] ?? { bg: 'rgba(233,79,55,0.12)' }).bg, color: (BADGE_COLORS[s.badge] ?? { color: '#E94F37' }).color, padding: '4px 10px', borderRadius: 50 }}>
                 {s.badge}
               </span>
               <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(233,79,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

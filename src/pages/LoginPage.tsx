@@ -27,7 +27,7 @@ export default function LoginPage() {
     <div style={{ minHeight: '100vh', background: '#1A1A2E', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ position: 'absolute', top: 32, left: 32 }}>
         <Link to="/">
-          <img src={wlasLogo} alt="Wlas Motor" style={{ height: 48 }} />
+          <img src={wlasLogo} alt="Wlas Motor" style={{ height: 80 }} />
         </Link>
       </div>
 
